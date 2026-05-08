@@ -1,0 +1,43 @@
+{
+  "name": "ppx-pes-token",
+  "version": "1.0.0",
+  "description": "PES token, presale, and vesting contracts",
+  "main": "hardhat.config.js",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1 --port 6284 --strictPort",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1 --port 6285",
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy": "hardhat run scripts/deploy.js",
+    "fund:presale": "hardhat run scripts/fund-presale.js",
+    "grant:allocations": "hardhat run scripts/grant-allocations.js",
+    "enable:trading": "hardhat run scripts/enable-trading.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dappweb/ppx-pes-token.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/dappweb/ppx-pes-token/issues"
+  },
+  "homepage": "https://github.com/dappweb/ppx-pes-token#readme",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@vitejs/plugin-react": "^5.1.2",
+    "hardhat": "^2.28.6",
+    "vite": "^7.2.7"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.4.0",
+    "dotenv": "^17.2.3",
+    "ethers": "^6.16.0",
+    "lucide-react": "^0.561.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3"
+  }
+}

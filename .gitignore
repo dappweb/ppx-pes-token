@@ -1,0 +1,13 @@
+node_modules/
+artifacts/
+cache/
+coverage/
+typechain-types/
+.env
+.coverage.json
+gas-report.txt
+dist/
+output/playwright/
+.playwright-cli/
+vite-dev*.log
+vite-dev*.err.log

@@ -1,0 +1,1434 @@
+:root {
+  --surface: #ffffff;
+  --neutral: #f7f7f8;
+  --ink: #111111;
+  --muted: #5f6065;
+  --line: #d7d7da;
+  --line-strong: #111111;
+  --accent: #002fa7;
+  --accent-soft: #eef3ff;
+  --danger: #e4002b;
+  --success: #007a3d;
+  --warning: #ff4f00;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--surface);
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background-color: var(--surface);
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+a {
+  color: var(--accent);
+}
+
+.appShell {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.rail {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  border-right: 1px solid var(--line-strong);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.mark {
+  padding: 22px 12px;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--accent);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 1;
+  text-align: center;
+}
+
+.rail nav {
+  display: grid;
+  border-top: 1px solid var(--line-strong);
+}
+
+.rail a {
+  display: grid;
+  place-items: center;
+  min-height: 72px;
+  border-bottom: 1px solid var(--line-strong);
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 22px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rail a:hover {
+  background: var(--accent);
+  color: var(--surface);
+}
+
+main {
+  min-width: 0;
+  padding: 0 0 64px;
+}
+
+.topBar {
+  min-height: 168px;
+  padding: 28px 32px;
+  border-bottom: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.94);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.topBar p {
+  margin: 0 0 10px;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.topBar h1 {
+  margin: 0;
+  max-width: 760px;
+  font-size: 44px;
+  line-height: 1.05;
+  font-weight: 800;
+}
+
+.walletCluster {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+  max-width: 520px;
+}
+
+.walletCluster > span {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  padding: 10px 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.routeTabs {
+  display: inline-flex;
+  align-items: stretch;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  min-height: 42px;
+}
+
+.routeTabs a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-right: 1px solid var(--line-strong);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 800;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.routeTabs a:last-child {
+  border-right: 0;
+}
+
+.routeTabs a.active {
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.section {
+  border-bottom: 1px solid var(--line-strong);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.sectionHead {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr) auto;
+  align-items: stretch;
+  border-bottom: 1px solid var(--line-strong);
+  min-height: 72px;
+}
+
+.sectionNumber {
+  display: grid;
+  place-items: center;
+  border-right: 1px solid var(--line-strong);
+  color: var(--accent);
+  font-size: 28px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.sectionHead h2 {
+  margin: 0;
+  align-self: center;
+  padding: 18px 24px;
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.sectionActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 24px;
+  border-left: 1px solid var(--line);
+}
+
+.button,
+.linkButton,
+.iconButton {
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--ink);
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  text-decoration: none;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.button.primary {
+  background: var(--accent);
+  color: var(--surface);
+}
+
+.button.secondary {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.button.ghost {
+  border-color: var(--line);
+}
+
+.button:hover:not(:disabled),
+.linkButton:hover,
+.iconButton:hover:not(:disabled) {
+  box-shadow: 4px 4px 0 var(--ink);
+  transform: translate(-1px, -1px);
+}
+
+.iconButton {
+  width: 42px;
+  padding: 0;
+}
+
+.spin {
+  animation: spin 900ms linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.notice {
+  margin: 24px 32px 0;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.notice.info svg {
+  color: var(--accent);
+}
+
+.notice.success svg {
+  color: var(--success);
+}
+
+.notice.error svg {
+  color: var(--danger);
+}
+
+.notice span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.notice button {
+  border: 0;
+  background: transparent;
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 24px;
+}
+
+.formGrid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 0;
+}
+
+.formGrid.three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 0;
+}
+
+.formGrid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.field > span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: var(--surface);
+  color: var(--ink);
+  padding: 10px 12px;
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+  line-height: 1.4;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+input[readonly] {
+  background: var(--neutral);
+}
+
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.metric {
+  min-height: 132px;
+  border-right: 1px solid var(--line);
+  padding: 18px;
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.metric:last-child {
+  border-right: 0;
+}
+
+.metric span,
+.metric small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.metric strong {
+  display: block;
+  color: var(--ink);
+  font-size: 26px;
+  line-height: 1.08;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.splitLayout,
+.adminGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.surfacePanel {
+  padding: 24px;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  background: var(--surface);
+  min-width: 0;
+}
+
+.splitLayout .surfacePanel:last-child,
+.adminGrid .surfacePanel:nth-child(2n) {
+  border-right: 0;
+}
+
+.surfacePanel h3 {
+  margin: 0 0 18px;
+  font-size: 22px;
+  line-height: 1.12;
+}
+
+.surfacePanel h4 {
+  margin: 20px 0 12px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.progressWrap {
+  margin-bottom: 18px;
+}
+
+.progressMeta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progressTrack {
+  height: 18px;
+  border: 1px solid var(--line-strong);
+  background:
+    linear-gradient(90deg, transparent 11px, var(--line) 12px),
+    var(--surface);
+  background-size: 12px 100%;
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--accent);
+}
+
+.buttonRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.dataList {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.2fr);
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-strong);
+  margin-bottom: 18px;
+}
+
+.dataList span,
+.dataList strong {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
+  padding: 10px 12px;
+  overflow-wrap: anywhere;
+}
+
+.dataList span {
+  color: var(--muted);
+  background: var(--neutral);
+  font-weight: 500;
+}
+
+.dataList strong {
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.dataList.compact {
+  grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1fr);
+}
+
+.statusStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line-strong);
+}
+
+.statusStrip span {
+  padding: 14px 18px;
+  border-right: 1px solid var(--line);
+  background: var(--neutral);
+  overflow-wrap: anywhere;
+}
+
+.statusStrip span:last-child {
+  border-right: 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--line-strong);
+  margin: 22px -24px;
+}
+
+.feeEditor {
+  border-top: 1px solid var(--line);
+  margin-top: 22px;
+  padding-top: 2px;
+}
+
+@media (max-width: 1180px) {
+  .metricGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .formGrid.four {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .statusStrip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .appShell {
+    grid-template-columns: 1fr;
+  }
+
+  .rail {
+    position: static;
+    height: auto;
+    flex-direction: row;
+    border-right: 0;
+    border-bottom: 1px solid var(--line-strong);
+  }
+
+  .mark {
+    width: 88px;
+    border-bottom: 0;
+    border-right: 1px solid var(--line-strong);
+  }
+
+  .rail nav {
+    flex: 1;
+    display: flex;
+    border-top: 0;
+  }
+
+  .rail a {
+    flex: 1;
+    min-height: 64px;
+    border-bottom: 0;
+    border-right: 1px solid var(--line-strong);
+  }
+
+  .topBar {
+    flex-direction: column;
+    min-height: 0;
+    padding: 24px 18px;
+  }
+
+  .clientShell .topBar {
+    flex-direction: row;
+    align-items: center;
+  }
+
+  .topBar h1 {
+    font-size: 34px;
+  }
+
+  .walletCluster {
+    justify-content: flex-start;
+  }
+
+  .sectionHead {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .sectionActions {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+    justify-content: flex-start;
+  }
+
+  .metricGrid,
+  .splitLayout,
+  .adminGrid,
+  .statusStrip,
+  .formGrid.two,
+  .formGrid.three,
+  .formGrid.four {
+    grid-template-columns: 1fr;
+  }
+
+  .metric {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .metric:last-child {
+    border-bottom: 0;
+  }
+
+  .surfacePanel,
+  .splitLayout .surfacePanel:last-child,
+  .adminGrid .surfacePanel:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .formGrid {
+    padding: 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .topBar h1 {
+    font-size: 28px;
+  }
+
+  .sectionHead h2 {
+    font-size: 23px;
+    padding: 16px;
+  }
+
+  .sectionNumber {
+    font-size: 22px;
+  }
+
+  .walletCluster,
+  .buttonRow,
+  .sectionActions {
+    align-items: stretch;
+  }
+
+  .button,
+  .linkButton {
+    width: 100%;
+  }
+
+  .routeTabs {
+    width: 100%;
+  }
+
+  .routeTabs a {
+    flex: 1;
+  }
+
+  .notice {
+    margin: 18px 18px 0;
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .notice button {
+    grid-column: 2;
+    justify-self: start;
+    padding: 0;
+  }
+}
+
+/* Web3 operating surfaces */
+:root {
+  --app-bg: #f4f7fb;
+  --panel: #ffffff;
+  --panel-2: #f9fbff;
+  --ink-strong: #0b1220;
+  --muted-2: #667085;
+  --green: #067647;
+  --amber: #b54708;
+  --red: #b42318;
+  --blue: #155eef;
+  --blue-2: #eff4ff;
+}
+
+body {
+  background-color: var(--app-bg);
+  background-image:
+    linear-gradient(rgba(21, 94, 239, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 94, 239, 0.06) 1px, transparent 1px);
+}
+
+.appShell {
+  background: transparent;
+}
+
+.rail {
+  background: var(--ink-strong);
+  border-right: 0;
+  color: var(--surface);
+}
+
+.mark {
+  border-bottom-color: rgba(255, 255, 255, 0.18);
+  color: var(--surface);
+}
+
+.rail nav {
+  border-top-color: rgba(255, 255, 255, 0.18);
+}
+
+.rail a {
+  border-bottom-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.rail a:hover {
+  background: var(--blue);
+  color: var(--surface);
+}
+
+main {
+  padding-bottom: 40px;
+}
+
+.topBar {
+  min-height: 116px;
+  background: rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(11, 18, 32, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.topBar p {
+  color: var(--blue);
+}
+
+.topBar h1 {
+  color: var(--ink-strong);
+  font-size: clamp(32px, 4vw, 56px);
+  letter-spacing: 0;
+}
+
+.clientShell .topBar {
+  min-height: auto;
+  align-items: center;
+}
+
+.clientShell .topBar h1 {
+  font-size: clamp(30px, 7vw, 46px);
+}
+
+.walletCluster {
+  max-width: 640px;
+}
+
+.walletCluster > span,
+.routeTabs,
+.button,
+.linkButton,
+.iconButton,
+input,
+select,
+textarea {
+  border-color: rgba(11, 18, 32, 0.14);
+  border-radius: 8px;
+}
+
+.walletCluster > span {
+  background: var(--panel);
+  color: var(--ink-strong);
+}
+
+.routeTabs {
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.routeTabs a {
+  border-right-color: rgba(11, 18, 32, 0.14);
+  color: var(--muted-2);
+}
+
+.routeTabs a.active {
+  background: var(--ink-strong);
+  color: var(--surface);
+}
+
+.button.primary {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.button.secondary {
+  border-color: rgba(21, 94, 239, 0.24);
+  background: var(--blue-2);
+  color: var(--blue);
+}
+
+.button:hover:not(:disabled),
+.linkButton:hover,
+.iconButton:hover:not(:disabled) {
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.section {
+  max-width: 1240px;
+  margin: 24px auto 0;
+  border: 1px solid rgba(11, 18, 32, 0.12);
+  border-radius: 8px;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+.sectionHead {
+  min-height: 66px;
+  border-bottom-color: rgba(11, 18, 32, 0.1);
+  grid-template-columns: 72px minmax(0, 1fr) auto;
+}
+
+.sectionNumber {
+  border-right-color: rgba(11, 18, 32, 0.1);
+  color: var(--blue);
+  font-size: 24px;
+}
+
+.sectionHead h2 {
+  color: var(--ink-strong);
+  font-size: 24px;
+}
+
+.sectionActions {
+  border-left-color: rgba(11, 18, 32, 0.1);
+}
+
+.clientOverview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.8fr);
+  gap: 0;
+  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+}
+
+.clientHero {
+  padding: 28px;
+  background: var(--ink-strong);
+  color: var(--surface);
+}
+
+.clientKicker {
+  display: inline-flex;
+  margin-bottom: 14px;
+  color: #84caff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.clientHero h3 {
+  margin: 0;
+  font-size: clamp(34px, 6vw, 68px);
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.clientHero p {
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: rgba(255, 255, 255, 0.74);
+  line-height: 1.7;
+}
+
+.heroNumbers {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.heroNumbers div,
+.walletStatePanel .stateRow,
+.transactionChecklist div {
+  border: 1px solid rgba(11, 18, 32, 0.1);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+.heroNumbers div {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  padding: 14px;
+}
+
+.heroNumbers span,
+.walletStatePanel span,
+.transactionChecklist span {
+  display: block;
+  color: var(--muted-2);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.heroNumbers span {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.heroNumbers strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--surface);
+  font-size: 26px;
+  line-height: 1.08;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.walletStatePanel {
+  display: grid;
+  gap: 12px;
+  padding: 24px;
+  background: var(--panel-2);
+}
+
+.walletStatePanel .stateRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+}
+
+.walletStatePanel strong {
+  color: var(--ink-strong);
+  font-size: 15px;
+}
+
+.metricGrid {
+  border-bottom-color: rgba(11, 18, 32, 0.1);
+}
+
+.metric {
+  min-height: 116px;
+  border-right-color: rgba(11, 18, 32, 0.08);
+  background: var(--panel);
+}
+
+.metric strong {
+  color: var(--ink-strong);
+  font-size: 24px;
+}
+
+.splitLayout {
+  gap: 0;
+}
+
+.surfacePanel {
+  border-right-color: rgba(11, 18, 32, 0.1);
+  border-bottom-color: rgba(11, 18, 32, 0.1);
+  background: var(--panel);
+}
+
+.surfacePanel h3 {
+  color: var(--ink-strong);
+}
+
+.transactionChecklist {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.transactionChecklist div {
+  padding: 12px;
+  min-width: 0;
+}
+
+.transactionChecklist strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--ink-strong);
+  font-size: 15px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.progressTrack {
+  height: 12px;
+  border: 0;
+  border-radius: 999px;
+  background: #e6eaf2;
+  overflow: hidden;
+}
+
+.progressFill {
+  border-radius: 999px;
+  background: var(--blue);
+}
+
+.dataList {
+  border-color: rgba(11, 18, 32, 0.1);
+}
+
+.dataList span,
+.dataList strong {
+  border-color: rgba(11, 18, 32, 0.1);
+}
+
+.dataList span {
+  background: var(--panel-2);
+}
+
+.statusStrip {
+  border-bottom-color: rgba(11, 18, 32, 0.1);
+}
+
+.statusStrip span {
+  background: var(--panel-2);
+  border-right-color: rgba(11, 18, 32, 0.08);
+}
+
+.adminOverview {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+}
+
+.adminOverview .metric {
+  min-height: 112px;
+}
+
+.adminGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.adminShell .section {
+  max-width: 1360px;
+}
+
+.adminShell .surfacePanel {
+  padding: 22px;
+}
+
+.divider {
+  background: rgba(11, 18, 32, 0.1);
+}
+
+.feeEditor {
+  border-top-color: rgba(11, 18, 32, 0.1);
+}
+
+@media (max-width: 1180px) {
+  .clientOverview {
+    grid-template-columns: 1fr;
+  }
+
+  .transactionChecklist,
+  .adminOverview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  .section {
+    margin: 16px;
+  }
+
+  .clientShell .rail {
+    display: none;
+  }
+
+  .clientShell .topBar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .sectionHead {
+    grid-template-columns: 56px minmax(0, 1fr);
+  }
+
+  .sectionHead h2 {
+    font-size: 21px;
+  }
+
+  .clientHero {
+    padding: 22px;
+  }
+
+  .heroNumbers,
+  .transactionChecklist,
+  .adminOverview {
+    grid-template-columns: 1fr;
+  }
+
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .metric {
+    min-height: 100px;
+    border-right: 1px solid rgba(11, 18, 32, 0.08);
+  }
+
+  .metric:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .adminGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  body {
+    background-size: 32px 32px;
+  }
+
+  .topBar {
+    padding: 16px;
+  }
+
+  .clientShell .topBar {
+    gap: 12px;
+  }
+
+  .topBar h1 {
+    font-size: 30px;
+  }
+
+  .clientShell .topBar h1 {
+    font-size: 28px;
+  }
+
+  .walletCluster {
+    width: 100%;
+    gap: 8px;
+  }
+
+  .clientShell .walletCluster {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .clientShell .walletCluster .button {
+    width: auto;
+    min-width: 112px;
+    padding-inline: 12px;
+  }
+
+  .walletCluster > span,
+  .iconButton {
+    min-height: 40px;
+  }
+
+  .section {
+    margin: 12px;
+    border-radius: 8px;
+  }
+
+  .sectionActions {
+    padding: 12px 16px;
+  }
+
+  .metricGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric {
+    min-height: auto;
+    gap: 14px;
+    border-right: 0;
+  }
+
+  .clientHero h3 {
+    font-size: 38px;
+  }
+
+  .walletStatePanel,
+  .surfacePanel {
+    padding: 16px;
+  }
+
+  .buttonRow {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .clientShell .buttonRow .button {
+    min-height: 52px;
+  }
+}
+
+/* Layout refinement */
+.clientShell.appShell {
+  grid-template-columns: 1fr;
+}
+
+.clientShell .rail {
+  display: none;
+}
+
+.clientShell main {
+  padding-bottom: 28px;
+}
+
+.clientShell .topBar {
+  max-width: 1024px;
+  margin: 0 auto;
+  width: 100%;
+  border-bottom: 0;
+  background: transparent;
+  backdrop-filter: none;
+  padding: 24px 20px 12px;
+}
+
+.clientShell .section {
+  max-width: 1024px;
+  margin: 0 auto 24px;
+  border: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.clientShell .sectionHead {
+  display: none;
+}
+
+.clientShell .clientOverview {
+  grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.82fr);
+  gap: 16px;
+  border: 0;
+}
+
+.clientShell .clientHero,
+.clientShell .walletStatePanel,
+.clientShell .surfacePanel {
+  border: 1px solid rgba(11, 18, 32, 0.1);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.clientShell .clientHero {
+  min-height: 330px;
+  display: flex;
+  flex-direction: column;
+}
+
+.clientShell .clientHero p {
+  font-size: 15px;
+}
+
+.clientHeroActions {
+  margin-top: auto;
+  padding-top: 22px;
+}
+
+.clientHeroActions .linkButton {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--surface);
+}
+
+.clientShell .walletStatePanel {
+  align-content: start;
+  border-color: rgba(11, 18, 32, 0.08);
+}
+
+.clientShell .metricGrid {
+  display: none;
+}
+
+.clientShell .splitLayout {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.clientShell .surfacePanel {
+  border-right: 1px solid rgba(11, 18, 32, 0.1);
+  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+}
+
+.clientShell .surfacePanel h3 {
+  font-size: 24px;
+}
+
+.clientShell .transactionChecklist {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.clientShell .buttonRow {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.clientShell .buttonRow .button,
+.clientShell .surfacePanel > .button {
+  min-height: 52px;
+  width: 100%;
+}
+
+.adminShell main {
+  padding: 0 24px 48px;
+}
+
+.adminShell .topBar {
+  margin: 0 -24px;
+  padding-left: 32px;
+  padding-right: 32px;
+}
+
+.adminShell .section {
+  margin-top: 18px;
+}
+
+.adminShell .adminOverview .metric {
+  min-height: 96px;
+}
+
+.adminShell input,
+.adminShell select,
+.adminShell textarea {
+  min-height: 40px;
+}
+
+@media (max-width: 1180px) {
+  .clientShell .clientOverview,
+  .clientShell .splitLayout {
+    grid-template-columns: 1fr;
+  }
+
+  .clientShell .clientHero {
+    min-height: 0;
+  }
+}
+
+@media (max-width: 860px) {
+  .clientShell .section {
+    margin: 0 14px 18px;
+  }
+
+  .clientShell .topBar {
+    padding: 16px 14px 10px;
+  }
+
+  .adminShell main {
+    padding: 0 12px 36px;
+  }
+
+  .adminShell .topBar {
+    margin: 0 -12px;
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .clientShell .topBar {
+    padding: 14px 12px 8px;
+  }
+
+  .clientShell .topBar h1 {
+    font-size: 25px;
+    line-height: 1.08;
+  }
+
+  .clientShell .walletCluster .button {
+    min-width: 104px;
+    min-height: 40px;
+    padding-inline: 10px;
+  }
+
+  .clientShell .section {
+    margin-inline: 10px;
+  }
+
+  .clientShell .clientHero,
+  .clientShell .walletStatePanel,
+  .clientShell .surfacePanel {
+    border-radius: 14px;
+  }
+
+  .clientShell .clientHero {
+    padding: 20px;
+  }
+
+  .clientShell .clientHero h3 {
+    font-size: 34px;
+  }
+
+  .clientShell .heroNumbers,
+  .clientShell .transactionChecklist {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .clientShell .heroNumbers strong {
+    font-size: 21px;
+  }
+
+  .clientShell .walletStatePanel {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .clientShell .walletStatePanel .stateRow {
+    padding: 12px;
+  }
+
+  .clientShell .surfacePanel {
+    padding: 14px;
+  }
+}
