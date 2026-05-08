@@ -1,0 +1,61 @@
+{
+  "runAt": "2026-05-08T19:34:10.2810345+08:00",
+  "network": "bscTestnet",
+  "chainId": "97",
+  "rpcReference": "https://bsc-testnet-dataseed.bnbchain.org",
+  "explorer": "https://testnet.bscscan.com",
+  "deployer": "0x744447d8580EB900b199e852C132F626247a36F7",
+  "smokeTestBuyer": "0xe1c77dD45BaEaC343b6630BE9e48B82152C90CDc",
+  "contracts": {
+    "pesToken": {
+      "name": "PES Token",
+      "symbol": "PES",
+      "address": "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
+      "explorer": "https://testnet.bscscan.com/address/0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0"
+    },
+    "paymentToken": {
+      "name": "Test USDx5",
+      "symbol": "USDx5",
+      "decimals": 18,
+      "address": "0xacD944e910952c020eb129C50921f180c62c3291",
+      "explorer": "https://testnet.bscscan.com/address/0xacD944e910952c020eb129C50921f180c62c3291"
+    },
+    "presaleVesting": {
+      "address": "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+      "explorer": "https://testnet.bscscan.com/address/0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+      "deploymentTx": "0xc15212366bb7b3e08073683ae4f531fff22cdb5f346059790ece1e33282585de"
+    }
+  },
+  "saleConfig": {
+    "paymentPerPackage": "300",
+    "pesPerPackage": "3000",
+    "maxPackages": "2000",
+    "publicPackageCap": "50",
+    "perWalletPackageLimit": "1",
+    "saleStart": "1778239695",
+    "saleEnd": "1778844795",
+    "launchTime": "1778239994"
+  },
+  "smokeTest": {
+    "presaleFundedPES": "6000000",
+    "buyerPaymentReceived": "300",
+    "buyerPurchasedPackages": "1",
+    "buyerAllocatedPES": "3000",
+    "buyerInitialClaimedPES": "600"
+  },
+  "postRunChainState": {
+    "presalePaymentToken": "0xacD944e910952c020eb129C50921f180c62c3291",
+    "presalePESBalance": "5999400",
+    "publicPackagesSold": "1",
+    "totalPackagesAllocated": "1"
+  },
+  "transactions": {
+    "deployPresale": "https://testnet.bscscan.com/tx/0xc15212366bb7b3e08073683ae4f531fff22cdb5f346059790ece1e33282585de",
+    "fundPresale": "https://testnet.bscscan.com/tx/0xf09bc1308d03f3fce7f33aaef1dafe90aed6e8f41f3506b1a31dd3c9b0a7c079",
+    "fundBuyerGas": "https://testnet.bscscan.com/tx/0x0af09189e94566dc79ca458f491bd2853b6d0e31b0ff92b003757696c66aa5fc",
+    "transferPayment": "https://testnet.bscscan.com/tx/0xe7166d3335908b6ae7cc6bd668f3b5865ed8e319beb9b1032699d7350c3d2944",
+    "approvePayment": "https://testnet.bscscan.com/tx/0x7e21b074b7f01ad43724dd469ba9cd9239cbeee8a5af9bdd6dfe8e21aa4dfd5d",
+    "purchasePackage": "https://testnet.bscscan.com/tx/0xc615b20b416a50fe917d5408c30572347a4ecb88b2794349bcbbeae9a21684e6",
+    "claimInitialRelease": "https://testnet.bscscan.com/tx/0xf27e19e41a1286006d3a16c3cc4b90e6c81895844cbdca451d078b43fd5ebe81"
+  }
+}

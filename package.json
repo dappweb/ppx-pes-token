@@ -11,6 +11,7 @@
     "test": "hardhat test",
     "deploy": "hardhat run scripts/deploy.js",
     "deploy:bsc-testnet:test": "hardhat run scripts/deploy-and-test-bsc-testnet.js --network bscTestnet",
+    "deploy:presale-payment:test": "hardhat run scripts/deploy-presale-with-payment-test.js --network bscTestnet",
     "fund:presale": "hardhat run scripts/fund-presale.js",
     "grant:allocations": "hardhat run scripts/grant-allocations.js",
     "enable:trading": "hardhat run scripts/enable-trading.js"

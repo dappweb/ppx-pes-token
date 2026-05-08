@@ -24,11 +24,20 @@ import { ERC20_ABI, PES_TOKEN_ABI, PRESALE_ABI } from "./lib/abis.js";
 
 const CONFIG_KEY = "pes-token-console-config";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const DEFAULT_BSC_TESTNET_CONFIG = {
+  pesAddress: "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
+  presaleAddress: "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+  paymentTokenAddress: "0xacD944e910952c020eb129C50921f180c62c3291",
+};
+const LEGACY_BSC_TESTNET_CONFIG = {
+  presaleAddress: "0x5e353B9F99e5A8EF669Bc8399035c3408A370D66",
+  paymentTokenAddress: "0xD9a6F0d3A794314567f4f1cce17aeb76e13B0924",
+};
 
 const emptyConfig = {
-  pesAddress: import.meta.env.VITE_PES_ADDRESS || "",
-  presaleAddress: import.meta.env.VITE_PRESALE_ADDRESS || "",
-  paymentTokenAddress: import.meta.env.VITE_PAYMENT_TOKEN_ADDRESS || "",
+  pesAddress: import.meta.env.VITE_PES_ADDRESS || DEFAULT_BSC_TESTNET_CONFIG.pesAddress,
+  presaleAddress: import.meta.env.VITE_PRESALE_ADDRESS || DEFAULT_BSC_TESTNET_CONFIG.presaleAddress,
+  paymentTokenAddress: import.meta.env.VITE_PAYMENT_TOKEN_ADDRESS || DEFAULT_BSC_TESTNET_CONFIG.paymentTokenAddress,
   ammPairAddress: import.meta.env.VITE_AMM_PAIR_ADDRESS || "",
   dexUrl: import.meta.env.VITE_DEX_URL || "",
 };
@@ -36,7 +45,14 @@ const emptyConfig = {
 function loadConfig() {
   try {
     const stored = JSON.parse(localStorage.getItem(CONFIG_KEY) || "{}");
-    return { ...emptyConfig, ...stored };
+    const config = { ...emptyConfig, ...stored };
+    if (
+      normalizeAddress(config.presaleAddress) === normalizeAddress(LEGACY_BSC_TESTNET_CONFIG.presaleAddress) &&
+      normalizeAddress(config.paymentTokenAddress) === normalizeAddress(LEGACY_BSC_TESTNET_CONFIG.paymentTokenAddress)
+    ) {
+      return { ...config, ...DEFAULT_BSC_TESTNET_CONFIG };
+    }
+    return config;
   } catch {
     return emptyConfig;
   }

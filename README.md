@@ -95,6 +95,12 @@ Deploy to BSC testnet:
 npx hardhat run scripts/deploy.js --network bscTestnet
 ```
 
+Deploy a replacement BSC testnet presale using an existing PES token and a specific ERC-20 payment token, then run a live purchase/claim smoke test:
+
+```bash
+PES_ADDRESS=0x... USDT_ADDRESS=0x... npm run deploy:presale-payment:test
+```
+
 Deploy to BSC mainnet:
 
 ```bash
