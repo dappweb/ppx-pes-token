@@ -20,8 +20,8 @@ This repository contains the on-chain implementation for the PES token launch:
 | Package price | 300 USDT |
 | PES per package | 3,000 PES |
 | Total packages | 2,000 |
-| Suggested public cap | 50 packages |
-| Suggested strategic/ecosystem allocation | 1,950 packages |
+| Public remaining counter | 2,000 total packages minus all purchased and owner-issued packages |
+| Owner-issued strategic/ecosystem target | 1,950 packages |
 | Initial release | 20% at launch |
 | Linear release | 2% per day |
 | Vesting duration | 40 days |
@@ -123,6 +123,14 @@ Grant strategic/ecosystem allocations from a JSON file:
 npm run grant:allocations -- --network bscTestnet
 ```
 
+Simulate the same Admin batch allocation against the current BSC testnet chain state without sending a transaction:
+
+```bash
+npm run simulate:admin-batch
+```
+
+The simulation uses `eth_call` and `eth_estimateGas`, so it does not sign or change chain state. It mirrors the chunking flow used by the real grant script. Set `ALLOCATIONS_FILE=path/to/file.json` to simulate a specific batch file, `ALLOCATIONS_CHUNK_SIZE` or `SIM_CHUNK_SIZE` to choose chunk size, or `SIM_BATCH_SIZE` and `SIM_PACKAGES_PER_ADDRESS` to generate a temporary batch.
+
 `allocations.example.json` format:
 
 ```json
@@ -146,7 +154,9 @@ The React frontend provides two separated operating surfaces:
 - user client at `/`: wallet connect, package purchase, payment token approval, vesting status, PES claim, and DEX link
 - Admin console at `/admin`: contract address setup, sale window, launch time, package config, funds wallet, AMM pair, trading switch, fee wallets, buy/sell fee rates, strategic/ecosystem allocations, batch allocations, pause controls, and fee whitelist
 
-Frontend contract addresses can be entered in the UI and saved to browser local storage, or prefilled through `.env` with the `VITE_*` variables.
+Frontend contract addresses can be entered in the UI and saved to browser local storage, or prefilled through `.env` with the `VITE_*` variables. The user client reads recent `PackagesPurchased` and `AdminAllocationGranted` events to show a scrolling purchase/allocation feed and a live remaining counter.
+
+Wallet connection uses RainbowKit and Wagmi. Set `VITE_WALLETCONNECT_PROJECT_ID` for WalletConnect mobile/deep-link wallet support; injected wallets can still connect through the RainbowKit modal during local testing. `VITE_READ_RPC_URL` is used for read-only balance and event queries, while writes are signed through the connected wallet.
 
 ## Launch Flow
 
@@ -161,4 +171,4 @@ Frontend contract addresses can be entered in the UI and saved to browser local 
 
 ## Notes
 
-The `1,950` non-public packages are implemented as transparent admin allocations. This avoids fake purchase activity while keeping the same supply and release mechanics.
+The `1,950` owner-issued packages are implemented as transparent admin allocations. They reduce the same 2,000-package remaining counter as public purchases, while keeping the purchase and release mechanics visible on-chain.

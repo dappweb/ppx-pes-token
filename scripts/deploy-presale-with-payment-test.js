@@ -70,7 +70,7 @@ async function main() {
   const pesPerPackage = hre.ethers.parseUnits(envUint("PES_PER_PACKAGE", "3000"), 18);
   const presaleFundingAmount = hre.ethers.parseUnits(envUint("PRESALE_PES_AMOUNT", "6000000"), 18);
   const maxPackages = BigInt(envUint("MAX_PACKAGES", "2000"));
-  const publicPackageCap = BigInt(envUint("PUBLIC_PACKAGE_CAP", "50"));
+  const publicPackageCap = BigInt(envUint("PUBLIC_PACKAGE_CAP", "2000"));
   const perWalletPackageLimit = BigInt(envUint("PER_WALLET_PACKAGE_LIMIT", "1"));
 
   const latestBlock = await provider.getBlock("latest");

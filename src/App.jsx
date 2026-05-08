@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ethers } from "ethers";
+import { useAccount, useChainId, useWalletClient } from "wagmi";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -24,6 +26,9 @@ import { ERC20_ABI, PES_TOKEN_ABI, PRESALE_ABI } from "./lib/abis.js";
 
 const CONFIG_KEY = "pes-token-console-config";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const DEFAULT_BSC_TESTNET_RPC_URL = "https://bsc-testnet-rpc.publicnode.com";
+const EVENT_LOOKBACK_BLOCKS = Number(import.meta.env.VITE_EVENT_LOOKBACK_BLOCKS || "20000");
+const OWNER_ALLOCATION_TARGET = 1950n;
 const DEFAULT_BSC_TESTNET_CONFIG = {
   pesAddress: "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
   presaleAddress: "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
@@ -90,6 +95,12 @@ function formatInteger(value) {
   return BigInt(value).toLocaleString("en-US");
 }
 
+function positiveRemaining(total, used) {
+  const totalValue = BigInt(total || 0n);
+  const usedValue = BigInt(used || 0n);
+  return totalValue > usedValue ? totalValue - usedValue : 0n;
+}
+
 function formatBps(value) {
   if (value === undefined || value === null) return "--";
   return `${(Number(value) / 100).toFixed(2)}%`;
@@ -99,6 +110,19 @@ function formatTimestamp(value) {
   const seconds = Number(value || 0n);
   if (!seconds) return "未设置";
   return new Date(seconds * 1000).toLocaleString("zh-CN", { hour12: false });
+}
+
+function formatActivityTime(value) {
+  const seconds = Number(value || 0);
+  if (!seconds) return "时间读取中";
+  return new Date(seconds * 1000).toLocaleString("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  });
 }
 
 function toDateTimeLocal(value) {
@@ -191,6 +215,47 @@ function IconButton({ label, icon: Icon, ...props }) {
   );
 }
 
+function RainbowWalletButton() {
+  return (
+    <ConnectButton.Custom>
+      {({ account, chain, mounted, openAccountModal, openChainModal, openConnectModal }) => {
+        const ready = mounted;
+        const connected = ready && account && chain;
+
+        if (!ready) {
+          return (
+            <Button icon={Wallet} disabled>
+              连接钱包
+            </Button>
+          );
+        }
+
+        if (!connected) {
+          return (
+            <Button icon={Wallet} onClick={openConnectModal}>
+              连接钱包
+            </Button>
+          );
+        }
+
+        if (chain.unsupported) {
+          return (
+            <Button icon={AlertTriangle} variant="secondary" onClick={openChainModal}>
+              切换到 BSC Testnet
+            </Button>
+          );
+        }
+
+        return (
+          <Button icon={Wallet} onClick={openAccountModal}>
+            {account.displayName}
+          </Button>
+        );
+      }}
+    </ConnectButton.Custom>
+  );
+}
+
 function Metric({ label, value, note }) {
   return (
     <div className="metric">
@@ -213,7 +278,7 @@ function Field({ label, children }) {
 function Progress({ value, total }) {
   const percent = packageProgress(value || 0n, total || 0n);
   return (
-    <div className="progressWrap" aria-label="公开认购进度">
+    <div className="progressWrap" role="progressbar" aria-label="公开认购进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
       <div className="progressMeta">
         <span>{percent.toFixed(2)}%</span>
         <span>
@@ -223,6 +288,45 @@ function Progress({ value, total }) {
       <div className="progressTrack">
         <div className="progressFill" style={{ width: `${percent}%` }} />
       </div>
+    </div>
+  );
+}
+
+function ActivityTicker({ events }) {
+  const visibleEvents = events?.slice(0, 8) || [];
+  const tickerEvents = visibleEvents.length > 1 ? [...visibleEvents, ...visibleEvents] : visibleEvents;
+
+  return (
+    <div className={`activityTicker ${visibleEvents.length ? "" : "empty"}`} aria-label="用户购买动态">
+      <div className="activityTickerHead">
+        <div>
+          <span>LIVE ACTIVITY</span>
+          <strong>链上认购动态</strong>
+        </div>
+        <small>{visibleEvents.length ? `最近 ${visibleEvents.length} 笔` : "等待新记录"}</small>
+      </div>
+      {visibleEvents.length ? (
+        <div className="activityMarquee">
+          <div className={`activityTrack ${visibleEvents.length > 1 ? "scrolling" : ""}`}>
+            {tickerEvents.map((event, index) => {
+              const isGrant = event.type === "grant";
+              return (
+                <div className={`activityToast ${isGrant ? "grant" : "purchase"}`} key={`${event.transactionHash}-${event.logIndex}-${index}`}>
+                  <span className={`activityType ${isGrant ? "grant" : "purchase"}`}>{isGrant ? "Admin 发放" : "用户购买"}</span>
+                  <strong>{shortAddress(event.account)}</strong>
+                  <span>{formatInteger(event.packages)} 份</span>
+                  <small>{formatUnits(event.tokenAmount)} PES</small>
+                  <time dateTime={event.timestamp ? new Date(Number(event.timestamp) * 1000).toISOString() : undefined}>
+                    {formatActivityTime(event.timestamp)}
+                  </time>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="activityEmpty">暂无新的链上动态。连接钱包后会自动刷新认购和释放数据。</div>
+      )}
     </div>
   );
 }
@@ -285,6 +389,7 @@ function ConfigPanel({ config, setConfig, onSave, number = "01", title = "合约
 function ClientPanel({
   data,
   payment,
+  saleEvents,
   account,
   config,
   buyPackages,
@@ -295,20 +400,20 @@ function ClientPanel({
   number = "01",
   title = "用户端",
 }) {
-  const publicRemaining =
-    data?.publicPackageCap && data?.publicPackagesSold
-      ? data.publicPackageCap > data.publicPackagesSold
-        ? data.publicPackageCap - data.publicPackagesSold
-        : 0n
-      : 0n;
+  const totalPackages = data?.maxPackages || 0n;
+  const totalAllocated = data?.totalPackagesAllocated || 0n;
+  const publicSold = data?.publicPackagesSold || 0n;
+  const publicRemaining = positiveRemaining(totalPackages, totalAllocated);
+  const ownerAllocated = totalAllocated > publicSold ? totalAllocated - publicSold : 0n;
+  const ownerRemaining = positiveRemaining(OWNER_ALLOCATION_TARGET, ownerAllocated);
   const paymentRequired = data?.paymentPerPackage ? data.paymentPerPackage * BigInt(buyPackages || "0") : 0n;
   const allowance = payment?.allowance || 0n;
   const needsApprove = paymentRequired > allowance;
-  const saleState = saleStatus(data);
-  const launchState = launchStatus(data);
-  const walletState = account ? "已连接" : "未连接";
-  const approvalState = paymentRequired === 0n ? "无支付金额" : needsApprove ? "需要授权" : "授权足够";
   const presaleAddress = normalizeAddress(config.presaleAddress);
+  const paymentLabel = `${formatUnits(data?.paymentPerPackage || 0n, payment?.decimals || 18, 2)} ${payment?.symbol || "USDT"}`;
+  const progressLabel = `${formatInteger(totalAllocated)} / ${formatInteger(totalPackages)}`;
+  const saleState = saleStatus(data);
+  const purchaseButtonText = !account ? "连接钱包后购买 PES 份额" : needsApprove ? "授权并购买 PES 份额" : "购买 PES 份额";
 
   return (
     <Section
@@ -325,47 +430,58 @@ function ClientPanel({
     >
       <div className="clientOverview">
         <div className="clientHero">
-          <span className="clientKicker">PES PRESALE</span>
-          <h3>{formatUnits(data?.pesPerPackage || 0n)} PES / 份</h3>
-          <p>
-            每份支付 {formatUnits(data?.paymentPerPackage || 0n, payment?.decimals || 18, 2)} {payment?.symbol || "USDT"}。
-            上线后先释放 20%，剩余部分每日释放 2%，40 天释放完毕。
-          </p>
-          <div className="heroNumbers">
-            <div>
-              <span>公开剩余</span>
-              <strong>{formatInteger(publicRemaining)}</strong>
+          <div className="clientHeroContent">
+            <div className="clientHeroTop">
+              <span className="clientKicker">PES PRESALE</span>
+              <span className="statusPill">{saleState}</span>
             </div>
-            <div>
-              <span>可领取</span>
-              <strong>{formatUnits(data?.claimable || 0n)} PES</strong>
-            </div>
-          </div>
-          {config.dexUrl ? (
+            <h3>{formatUnits(data?.pesPerPackage || 0n)} PES / 份</h3>
+            <p className="clientLead">
+              每份支付 {paymentLabel}，上线后先释放 20%，剩余部分每日释放 2%，40 天释放完毕。
+            </p>
             <div className="clientHeroActions">
-              <a className="linkButton" href={config.dexUrl} target="_blank" rel="noreferrer">
-                <ExternalLink size={16} />
-                <span>打开交易页</span>
+              <a className="linkButton heroCta" href="#purchase-panel">
+                <ShoppingCart size={16} />
+                <span>立即认购</span>
               </a>
+              {config.dexUrl ? (
+                <a className="linkButton" href={config.dexUrl} target="_blank" rel="noreferrer">
+                  <ExternalLink size={16} />
+                  <span>打开交易页</span>
+                </a>
+              ) : null}
             </div>
-          ) : null}
-        </div>
-        <div className="walletStatePanel">
-          <div className="stateRow">
-            <span>钱包</span>
-            <strong>{walletState}</strong>
+            <div className="heroNumbers">
+              <div>
+                <span>单份价格</span>
+                <strong>{paymentLabel}</strong>
+              </div>
+              <div>
+                <span>公开剩余</span>
+                <strong>{formatInteger(publicRemaining)}</strong>
+              </div>
+              <div>
+                <span>认购进度</span>
+                <strong>{progressLabel}</strong>
+              </div>
+            </div>
           </div>
-          <div className="stateRow">
-            <span>支付授权</span>
-            <strong>{approvalState}</strong>
-          </div>
-          <div className="stateRow">
-            <span>认购状态</span>
-            <strong>{saleState}</strong>
-          </div>
-          <div className="stateRow">
-            <span>释放状态</span>
-            <strong>{launchState}</strong>
+
+          <div className="tokenVisual" aria-hidden="true">
+            <div className="tokenDisk">
+              <img src="/favicon.svg" alt="" />
+            </div>
+            <div className="tokenVisualMeta">
+              <span>BSC TESTNET</span>
+              <strong>20% + 2%/day</strong>
+              <small>Vesting Schedule</small>
+            </div>
+            <div className="tokenBars">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
           </div>
         </div>
       </div>
@@ -375,17 +491,31 @@ function ClientPanel({
         <Metric label="上线状态" value={launchStatus(data)} note={formatTimestamp(data?.launchTime)} />
         <Metric label="单份价格" value={`${formatUnits(data?.paymentPerPackage || 0n, payment?.decimals || 18, 2)} ${payment?.symbol || "USDT"}`} />
         <Metric label="单份 PES" value={`${formatUnits(data?.pesPerPackage || 0n)} PES`} />
-        <Metric label="公开剩余份数" value={formatInteger(publicRemaining)} note={`公开上限 ${formatInteger(data?.publicPackageCap || 0n)}`} />
-        <Metric label="总分配份数" value={formatInteger(data?.totalPackagesAllocated || 0n)} note={`总份数 ${formatInteger(data?.maxPackages || 0n)}`} />
+        <Metric label="公开剩余份数" value={formatInteger(publicRemaining)} note={`总份数 ${formatInteger(totalPackages)}`} />
+        <Metric label="Owner待发放" value={formatInteger(ownerRemaining)} note={`目标 ${formatInteger(OWNER_ALLOCATION_TARGET)} 份`} />
       </div>
 
+      <ActivityTicker events={saleEvents} />
+
       <div className="splitLayout">
-        <div className="surfacePanel">
-          <h3>公开认购</h3>
-          <Progress value={data?.publicPackagesSold || 0n} total={data?.publicPackageCap || 0n} />
+        <div className="surfacePanel purchasePanel" id="purchase-panel">
+          <div className="panelHeader">
+            <div>
+              <span className="panelKicker">PURCHASE</span>
+              <h3>公开认购</h3>
+            </div>
+            <span className="panelStatus">{payment?.symbol || "USDT"}</span>
+          </div>
+          <Progress value={totalAllocated} total={totalPackages} />
           <div className="formGrid two">
             <Field label="购买份数">
-              <input min="1" type="number" value={buyPackages} onChange={(event) => setBuyPackages(event.target.value)} />
+              <input
+                min="1"
+                max={publicRemaining.toString()}
+                type="number"
+                value={buyPackages}
+                onChange={(event) => setBuyPackages(event.target.value)}
+              />
             </Field>
             <Field label="需支付">
               <input readOnly value={`${formatUnits(paymentRequired, payment?.decimals || 18, 2)} ${payment?.symbol || "USDT"}`} />
@@ -413,7 +543,7 @@ function ClientPanel({
             <Button
               icon={ShoppingCart}
               busy={busy === "approvePurchase"}
-              disabled={!account || !contractsReady || paymentRequired === 0n}
+              disabled={!account || !contractsReady || paymentRequired === 0n || publicRemaining === 0n}
               onClick={() =>
                 runTransaction(needsApprove ? "授权并购买 PES 份额" : "购买 PES 份额", "approvePurchase", async ({
                   paymentToken,
@@ -432,14 +562,20 @@ function ClientPanel({
                   return presale.purchasePackages(BigInt(buyPackages || "0"));
                 })
               }
-            >
-              {needsApprove ? `授权并购买 PES 份额` : "购买 PES 份额"}
+          >
+              {purchaseButtonText}
             </Button>
           </div>
         </div>
 
-        <div className="surfacePanel">
-          <h3>我的释放</h3>
+        <div className="surfacePanel vestingPanel">
+          <div className="panelHeader">
+            <div>
+              <span className="panelKicker">VESTING</span>
+              <h3>我的释放</h3>
+            </div>
+            <span className="panelStatus">PES</span>
+          </div>
           <div className="dataList">
             <span>我的份数</span>
             <strong>{formatInteger(data?.allocation?.packages || 0n)}</strong>
@@ -490,7 +626,7 @@ function AdminPanel({
     paymentPerPackage: "300",
     pesPerPackage: "3000",
     maxPackages: "2000",
-    publicPackageCap: "50",
+    publicPackageCap: "2000",
     perWalletPackageLimit: "1",
   });
   const [fundsWallet, setFundsWallet] = useState("");
@@ -536,6 +672,10 @@ function AdminPanel({
     account &&
     ((data?.owner && normalizeAddress(data.owner) === normalizeAddress(account)) ||
       (token?.owner && normalizeAddress(token.owner) === normalizeAddress(account)));
+  const adminPublicSold = data?.publicPackagesSold || 0n;
+  const adminTotalAllocated = data?.totalPackagesAllocated || 0n;
+  const adminOwnerAllocated = adminTotalAllocated > adminPublicSold ? adminTotalAllocated - adminPublicSold : 0n;
+  const adminRemaining = positiveRemaining(data?.maxPackages || 0n, adminTotalAllocated);
 
   return (
     <Section
@@ -555,8 +695,9 @@ function AdminPanel({
       </div>
 
       <div className="adminOverview">
-        <Metric label="公开认购" value={`${formatInteger(data?.publicPackagesSold || 0n)} / ${formatInteger(data?.publicPackageCap || 0n)}`} />
-        <Metric label="总分配份数" value={formatInteger(data?.totalPackagesAllocated || 0n)} note={`总上限 ${formatInteger(data?.maxPackages || 0n)}`} />
+        <Metric label="公开认购" value={`${formatInteger(adminPublicSold)} / ${formatInteger(data?.publicPackageCap || 0n)}`} />
+        <Metric label="剩余份数" value={formatInteger(adminRemaining)} note={`总份数 ${formatInteger(data?.maxPackages || 0n)}`} />
+        <Metric label="Owner发放" value={`${formatInteger(adminOwnerAllocated)} / ${formatInteger(OWNER_ALLOCATION_TARGET)}`} />
         <Metric label="已分配 PES" value={`${formatUnits(data?.totalTokensAllocated || 0n)} PES`} />
         <Metric label="已领取 PES" value={`${formatUnits(data?.totalTokensClaimed || 0n)} PES`} />
         <Metric label="交易状态" value={token?.tradingEnabled ? "已开启" : "未开启"} />
@@ -911,6 +1052,9 @@ function FeeEditor({ title, form, setForm }) {
 }
 
 export default function App() {
+  const { address: connectedAddress } = useAccount();
+  const activeChainId = useChainId();
+  const { data: walletClient } = useWalletClient();
   const [config, setConfig] = useState(loadConfig);
   const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
@@ -919,14 +1063,20 @@ export default function App() {
   const [data, setData] = useState(null);
   const [token, setToken] = useState(null);
   const [payment, setPayment] = useState(null);
+  const [saleEvents, setSaleEvents] = useState([]);
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState("");
   const [buyPackages, setBuyPackages] = useState("1");
   const [path, setPath] = useState(() => window.location.pathname);
 
   const isAdminRoute = path.startsWith("/admin");
-  const pageLabel = isAdminRoute ? "PES Admin Console" : "PES Client";
+  const pageLabel = isAdminRoute ? "PES Admin Console" : "PES Token Launchpad";
   const pageTitle = isAdminRoute ? "PES Admin 管理系统" : "PES 私募认购";
+  const fallbackProvider = useMemo(
+    () => new ethers.JsonRpcProvider(import.meta.env.VITE_READ_RPC_URL || DEFAULT_BSC_TESTNET_RPC_URL),
+    []
+  );
+  const readProvider = chainId && chainId !== "97" ? fallbackProvider : provider || fallbackProvider;
 
   const navigate = useCallback((nextPath) => {
     window.history.pushState({}, "", nextPath);
@@ -935,8 +1085,8 @@ export default function App() {
   }, []);
 
   const contractsReady = useMemo(
-    () => isAddress(config.pesAddress) && isAddress(config.presaleAddress) && Boolean(provider),
-    [config.pesAddress, config.presaleAddress, provider]
+    () => isAddress(config.pesAddress) && isAddress(config.presaleAddress) && Boolean(readProvider),
+    [config.pesAddress, config.presaleAddress, readProvider]
   );
 
   const saveConfig = useCallback(() => {
@@ -952,31 +1102,12 @@ export default function App() {
     setNotice({ type: "success", message: "配置已保存" });
   }, [config]);
 
-  const connectWallet = useCallback(async () => {
-    if (!window.ethereum) {
-      setNotice({ type: "error", message: "未检测到钱包扩展" });
-      return;
-    }
-
-    const nextProvider = new ethers.BrowserProvider(window.ethereum);
-    await nextProvider.send("eth_requestAccounts", []);
-    const nextSigner = await nextProvider.getSigner();
-    const network = await nextProvider.getNetwork();
-    const nextAccount = await nextSigner.getAddress();
-
-    setProvider(nextProvider);
-    setSigner(nextSigner);
-    setAccount(nextAccount);
-    setChainId(network.chainId.toString());
-    setNotice({ type: "success", message: `已连接 ${shortAddress(nextAccount)}` });
-  }, []);
-
   const refreshData = useCallback(async () => {
-    if (!provider || !isAddress(config.pesAddress) || !isAddress(config.presaleAddress)) return;
+    if (!readProvider || !isAddress(config.pesAddress) || !isAddress(config.presaleAddress)) return;
 
     try {
-      const pes = new ethers.Contract(normalizeAddress(config.pesAddress), PES_TOKEN_ABI, provider);
-      const presale = new ethers.Contract(normalizeAddress(config.presaleAddress), PRESALE_ABI, provider);
+      const pes = new ethers.Contract(normalizeAddress(config.pesAddress), PES_TOKEN_ABI, readProvider);
+      const presale = new ethers.Contract(normalizeAddress(config.presaleAddress), PRESALE_ABI, readProvider);
 
       const [tokenReads, presaleReads] = await Promise.all([
         Promise.all([
@@ -1103,7 +1234,7 @@ export default function App() {
       };
 
       const paymentAddress = normalizeAddress(config.paymentTokenAddress) || paymentTokenAddress;
-      const paymentToken = new ethers.Contract(paymentAddress, ERC20_ABI, provider);
+      const paymentToken = new ethers.Contract(paymentAddress, ERC20_ABI, readProvider);
       const [paymentSymbol, paymentDecimalsRaw, paymentBalance, allowance] = await Promise.all([
         paymentToken.symbol(),
         paymentToken.decimals(),
@@ -1124,15 +1255,74 @@ export default function App() {
       if (!normalizeAddress(config.paymentTokenAddress)) {
         setConfig((current) => ({ ...current, paymentTokenAddress: paymentAddress }));
       }
+
+      try {
+        const latestBlock = await readProvider.getBlockNumber();
+        const fromBlock = Math.max(0, latestBlock - EVENT_LOOKBACK_BLOCKS);
+        const [purchaseLogs, grantLogs] = await Promise.all([
+          presale.queryFilter(presale.filters.PackagesPurchased(), fromBlock, latestBlock),
+          presale.queryFilter(presale.filters.AdminAllocationGranted(), fromBlock, latestBlock),
+        ]);
+        const rawSaleEvents = [
+          ...purchaseLogs.map((event) => ({
+            type: "purchase",
+            account: event.args?.buyer || event.args?.[0] || ZERO_ADDRESS,
+            packages: event.args?.packages || event.args?.[1] || 0n,
+            tokenAmount: event.args?.tokenAmount || event.args?.[3] || 0n,
+            blockNumber: event.blockNumber,
+            logIndex: event.index ?? event.logIndex ?? 0,
+            transactionHash: event.transactionHash,
+          })),
+          ...grantLogs.map((event) => ({
+            type: "grant",
+            account: event.args?.account || event.args?.[0] || ZERO_ADDRESS,
+            packages: event.args?.packages || event.args?.[1] || 0n,
+            tokenAmount: event.args?.tokenAmount || event.args?.[2] || 0n,
+            blockNumber: event.blockNumber,
+            logIndex: event.index ?? event.logIndex ?? 0,
+            transactionHash: event.transactionHash,
+          })),
+        ]
+          .sort((a, b) => (b.blockNumber === a.blockNumber ? b.logIndex - a.logIndex : b.blockNumber - a.blockNumber))
+          .slice(0, 24);
+
+        const uniqueBlockNumbers = [...new Set(rawSaleEvents.map((event) => event.blockNumber))];
+        const blockTimestamps = new Map(
+          await Promise.all(
+            uniqueBlockNumbers.map(async (blockNumber) => {
+              const block = await readProvider.getBlock(blockNumber);
+              return [blockNumber, block?.timestamp || 0];
+            })
+          )
+        );
+
+        const nextSaleEvents = rawSaleEvents
+          .map((event) => ({
+            ...event,
+            timestamp: blockTimestamps.get(event.blockNumber) || 0,
+          }))
+          .sort((a, b) => {
+            if (b.timestamp !== a.timestamp) return b.timestamp - a.timestamp;
+            return b.blockNumber === a.blockNumber ? b.logIndex - a.logIndex : b.blockNumber - a.blockNumber;
+          });
+
+        setSaleEvents(nextSaleEvents);
+      } catch {
+        setSaleEvents([]);
+      }
     } catch (error) {
       setNotice({ type: "error", message: getErrorMessage(error) });
     }
-  }, [account, config.paymentTokenAddress, config.pesAddress, config.presaleAddress, provider]);
+  }, [account, config.paymentTokenAddress, config.pesAddress, config.presaleAddress, readProvider]);
 
   const runTransaction = useCallback(
     async (label, key, callback) => {
       if (!signer) {
         setNotice({ type: "error", message: "请先连接钱包" });
+        return;
+      }
+      if (chainId !== "97") {
+        setNotice({ type: "error", message: "请先在 RainbowKit 中切换到 BSC Testnet" });
         return;
       }
       if (!isAddress(config.pesAddress) || !isAddress(config.presaleAddress)) {
@@ -1164,26 +1354,44 @@ export default function App() {
         setBusy("");
       }
     },
-    [config.paymentTokenAddress, config.pesAddress, config.presaleAddress, payment?.address, refreshData, signer]
+    [chainId, config.paymentTokenAddress, config.pesAddress, config.presaleAddress, payment?.address, refreshData, signer]
   );
 
   useEffect(() => {
-    if (!window.ethereum) return;
+    let disposed = false;
 
-    const connectExisting = async () => {
-      const nextProvider = new ethers.BrowserProvider(window.ethereum);
-      const accounts = await nextProvider.send("eth_accounts", []);
-      if (!accounts.length) return;
-      const nextSigner = await nextProvider.getSigner();
-      const network = await nextProvider.getNetwork();
-      setProvider(nextProvider);
-      setSigner(nextSigner);
-      setAccount(await nextSigner.getAddress());
-      setChainId(network.chainId.toString());
+    const syncRainbowWallet = async () => {
+      setAccount(connectedAddress || "");
+      setChainId(activeChainId ? String(activeChainId) : "");
+
+      if (!walletClient || !connectedAddress) {
+        setProvider(null);
+        setSigner(null);
+        return;
+      }
+
+      const nextProvider = new ethers.BrowserProvider(walletClient.transport, {
+        chainId: walletClient.chain.id,
+        name: walletClient.chain.name,
+      });
+      const nextSigner = await nextProvider.getSigner(connectedAddress);
+
+      if (!disposed) {
+        setProvider(nextProvider);
+        setSigner(nextSigner);
+      }
     };
 
-    connectExisting();
-  }, []);
+    syncRainbowWallet().catch((error) => {
+      if (!disposed) {
+        setNotice({ type: "error", message: getErrorMessage(error) });
+      }
+    });
+
+    return () => {
+      disposed = true;
+    };
+  }, [activeChainId, connectedAddress, walletClient]);
 
   useEffect(() => {
     const handlePopState = () => setPath(window.location.pathname);
@@ -1193,6 +1401,8 @@ export default function App() {
 
   useEffect(() => {
     refreshData();
+    const timer = window.setInterval(refreshData, 30_000);
+    return () => window.clearInterval(timer);
   }, [refreshData]);
 
   useEffect(() => {
@@ -1218,7 +1428,7 @@ export default function App() {
       <main>
         <header className="topBar">
           <div>
-            {isAdminRoute ? <p>{pageLabel}</p> : null}
+            <p>{pageLabel}</p>
             <h1>{pageTitle}</h1>
           </div>
           <div className="walletCluster">
@@ -1251,9 +1461,7 @@ export default function App() {
                 <IconButton label="复制钱包地址" icon={Copy} disabled={!account} onClick={() => navigator.clipboard.writeText(account)} />
               </>
             ) : null}
-            <Button icon={Wallet} onClick={connectWallet} busy={busy === "connect"}>
-              {account ? "切换钱包" : "连接钱包"}
-            </Button>
+            <RainbowWalletButton />
           </div>
         </header>
 
@@ -1286,6 +1494,7 @@ export default function App() {
             <ClientPanel
               data={data}
               payment={payment}
+              saleEvents={saleEvents}
               account={account}
               config={config}
               buyPackages={buyPackages}

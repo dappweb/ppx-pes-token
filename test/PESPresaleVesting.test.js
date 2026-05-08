@@ -22,7 +22,7 @@ describe("PESPresaleVesting", function () {
     const latest = await time.latest();
     const saleStart = options.saleStart ?? latest - 10;
     const saleEnd = options.saleEnd ?? latest + 7 * DAY;
-    const publicPackageCap = options.publicPackageCap ?? 50;
+    const publicPackageCap = options.publicPackageCap ?? 2000;
     const perWalletPackageLimit = options.perWalletPackageLimit ?? 50;
     const launchTime = options.launchTime ?? 0;
 
@@ -75,7 +75,7 @@ describe("PESPresaleVesting", function () {
     expect(await presale.publicPackagesSold()).to.equal(1);
   });
 
-  it("supports transparent strategic allocations and caps public sale packages", async function () {
+  it("supports owner allocations while preserving the 2,000 package total cap", async function () {
     const { presale, buyer, secondBuyer, strategicAccount } = await deployFixture();
 
     await expect(presale.grantAllocation(strategicAccount.address, 1950))
@@ -87,10 +87,7 @@ describe("PESPresaleVesting", function () {
     expect(await presale.totalPackagesAllocated()).to.equal(2000);
     expect(await presale.publicPackagesSold()).to.equal(50);
 
-    await expect(presale.connect(secondBuyer).purchasePackages(1)).to.be.revertedWithCustomError(
-      presale,
-      "PublicPackageCapExceeded"
-    );
+    await expect(presale.connect(secondBuyer).purchasePackages(1)).to.be.revertedWithCustomError(presale, "MaxPackageCapExceeded");
 
     await expect(presale.grantAllocation(strategicAccount.address, 1)).to.be.revertedWithCustomError(
       presale,

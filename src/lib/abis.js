@@ -25,6 +25,8 @@ export const PES_TOKEN_ABI = [
 ];
 
 export const PRESALE_ABI = [
+  "event PackagesPurchased(address indexed buyer, uint256 packages, uint256 paymentAmount, uint256 tokenAmount)",
+  "event AdminAllocationGranted(address indexed account, uint256 packages, uint256 tokenAmount)",
   "function owner() view returns (address)",
   "function paused() view returns (bool)",
   "function pesToken() view returns (address)",

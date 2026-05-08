@@ -30,7 +30,7 @@
     "paymentPerPackage": "300",
     "pesPerPackage": "3000",
     "maxPackages": "2000",
-    "publicPackageCap": "50",
+    "publicPackageCap": "2000",
     "perWalletPackageLimit": "1",
     "saleStart": "1778239695",
     "saleEnd": "1778844795",
@@ -47,8 +47,17 @@
     "presalePaymentToken": "0xacD944e910952c020eb129C50921f180c62c3291",
     "presalePESBalance": "5999400",
     "publicPackagesSold": "1",
-    "totalPackagesAllocated": "1"
+    "totalPackagesAllocated": "1",
+    "remainingPackages": "1999"
   },
+  "configUpdates": [
+    {
+      "runAt": "2026-05-08",
+      "action": "setPackageConfig",
+      "publicPackageCap": "2000",
+      "transaction": "https://testnet.bscscan.com/tx/0x7f0bb2bf49f0621ee2aa3760c5abb677ebca1fe0a012612dd0054d38e3185f58"
+    }
+  ],
   "transactions": {
     "deployPresale": "https://testnet.bscscan.com/tx/0xc15212366bb7b3e08073683ae4f531fff22cdb5f346059790ece1e33282585de",
     "fundPresale": "https://testnet.bscscan.com/tx/0xf09bc1308d03f3fce7f33aaef1dafe90aed6e8f41f3506b1a31dd3c9b0a7c079",

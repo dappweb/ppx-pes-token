@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=Orbitron:wght@500;600;700;800&display=swap");
+
 :root {
   --surface: #ffffff;
   --neutral: #f7f7f8;
@@ -693,23 +695,23 @@ input[readonly] {
 
 /* Web3 operating surfaces */
 :root {
-  --app-bg: #f4f7fb;
+  --app-bg: #ffffff;
   --panel: #ffffff;
-  --panel-2: #f9fbff;
-  --ink-strong: #0b1220;
-  --muted-2: #667085;
+  --panel-2: #f7f7f8;
+  --ink-strong: #111111;
+  --muted-2: #5f6065;
   --green: #067647;
   --amber: #b54708;
   --red: #b42318;
-  --blue: #155eef;
+  --blue: #002fa7;
   --blue-2: #eff4ff;
 }
 
 body {
   background-color: var(--app-bg);
   background-image:
-    linear-gradient(rgba(21, 94, 239, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(21, 94, 239, 0.06) 1px, transparent 1px);
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
 }
 
 .appShell {
@@ -747,9 +749,9 @@ main {
 
 .topBar {
   min-height: 116px;
-  background: rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(11, 18, 32, 0.12);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid var(--line-strong);
+  backdrop-filter: none;
 }
 
 .topBar p {
@@ -857,21 +859,21 @@ textarea {
 
 .clientOverview {
   display: grid;
-  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.8fr);
+  grid-template-columns: 1fr;
   gap: 0;
-  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .clientHero {
   padding: 28px;
-  background: var(--ink-strong);
-  color: var(--surface);
+  background: var(--surface);
+  color: var(--ink);
 }
 
 .clientKicker {
   display: inline-flex;
   margin-bottom: 14px;
-  color: #84caff;
+  color: var(--accent);
   font-size: 13px;
   font-weight: 800;
 }
@@ -883,75 +885,50 @@ textarea {
   letter-spacing: 0;
 }
 
-.clientHero p {
-  max-width: 720px;
-  margin: 18px 0 0;
-  color: rgba(255, 255, 255, 0.74);
-  line-height: 1.7;
-}
-
 .heroNumbers {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
   margin-top: 28px;
+  border-top: 1px solid var(--line-strong);
+  border-left: 1px solid var(--line-strong);
 }
 
 .heroNumbers div,
-.walletStatePanel .stateRow,
 .transactionChecklist div {
   border: 1px solid rgba(11, 18, 32, 0.1);
-  border-radius: 8px;
   background: var(--panel);
 }
 
 .heroNumbers div {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.16);
-  padding: 14px;
+  min-width: 0;
+  border-top: 0;
+  border-left: 0;
+  border-color: var(--line-strong);
+  background: var(--surface);
+  padding: 16px;
 }
 
 .heroNumbers span,
-.walletStatePanel span,
 .transactionChecklist span {
   display: block;
-  color: var(--muted-2);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.2;
 }
 
 .heroNumbers span {
-  color: rgba(255, 255, 255, 0.62);
+  color: var(--muted);
 }
 
 .heroNumbers strong {
   display: block;
   margin-top: 8px;
-  color: var(--surface);
+  color: var(--ink);
   font-size: 26px;
   line-height: 1.08;
   font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
-}
-
-.walletStatePanel {
-  display: grid;
-  gap: 12px;
-  padding: 24px;
-  background: var(--panel-2);
-}
-
-.walletStatePanel .stateRow {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px;
-}
-
-.walletStatePanel strong {
-  color: var(--ink-strong);
-  font-size: 15px;
 }
 
 .metricGrid {
@@ -1018,6 +995,110 @@ textarea {
   background: var(--blue);
 }
 
+.activityTicker {
+  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+  background: var(--panel);
+}
+
+.activityTickerHead {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid rgba(11, 18, 32, 0.08);
+}
+
+.activityTickerHead span,
+.activityItem span,
+.activityItem small,
+.activityEmpty {
+  color: var(--muted-2);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.activityTickerHead strong {
+  color: var(--ink-strong);
+  font-size: 14px;
+}
+
+.activityViewport {
+  overflow: hidden;
+}
+
+.activityTrack {
+  display: flex;
+  gap: 10px;
+  width: max-content;
+  padding: 12px 18px;
+}
+
+.activityTrack.scrolling {
+  animation: tickerScroll 28s linear infinite;
+}
+
+.activityTrack.scrolling:hover {
+  animation-play-state: paused;
+}
+
+.activityItem {
+  min-width: 238px;
+  border: 1px solid rgba(11, 18, 32, 0.1);
+  border-radius: 8px;
+  background: var(--panel-2);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px 10px;
+  padding: 12px;
+  align-items: center;
+}
+
+.activityItem strong,
+.activityItem small {
+  overflow-wrap: anywhere;
+}
+
+.activityItem strong {
+  color: var(--ink-strong);
+  font-size: 15px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.activityType {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.activityType.purchase {
+  background: rgba(6, 118, 71, 0.1);
+  color: var(--green);
+}
+
+.activityType.grant {
+  background: rgba(21, 94, 239, 0.1);
+  color: var(--blue);
+}
+
+.activityEmpty {
+  padding: 18px;
+  background: var(--panel-2);
+}
+
+@keyframes tickerScroll {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .dataList {
   border-color: rgba(11, 18, 32, 0.1);
 }
@@ -1042,7 +1123,7 @@ textarea {
 
 .adminOverview {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   border-bottom: 1px solid rgba(11, 18, 32, 0.1);
 }
 
@@ -1197,7 +1278,6 @@ textarea {
     font-size: 38px;
   }
 
-  .walletStatePanel,
   .surfacePanel {
     padding: 16px;
   }
@@ -1248,47 +1328,46 @@ textarea {
 }
 
 .clientShell .clientOverview {
-  grid-template-columns: minmax(0, 1.18fr) minmax(280px, 0.82fr);
-  gap: 16px;
-  border: 0;
+  grid-template-columns: 1fr;
+  gap: 0;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
 }
 
 .clientShell .clientHero,
-.clientShell .walletStatePanel,
 .clientShell .surfacePanel {
-  border: 1px solid rgba(11, 18, 32, 0.1);
-  border-radius: 18px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
   overflow: hidden;
 }
 
 .clientShell .clientHero {
-  min-height: 330px;
-  display: flex;
-  flex-direction: column;
-}
-
-.clientShell .clientHero p {
-  font-size: 15px;
+  min-height: 0;
+  border: 0;
+  display: block;
 }
 
 .clientHeroActions {
-  margin-top: auto;
-  padding-top: 22px;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-strong);
 }
 
 .clientHeroActions .linkButton {
-  border-color: rgba(255, 255, 255, 0.18);
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--surface);
-}
-
-.clientShell .walletStatePanel {
-  align-content: start;
-  border-color: rgba(11, 18, 32, 0.08);
+  border-color: var(--line-strong);
+  background: var(--surface);
+  color: var(--accent);
 }
 
 .clientShell .metricGrid {
   display: none;
+}
+
+.clientShell .activityTicker {
+  margin-top: 16px;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  overflow: hidden;
 }
 
 .clientShell .splitLayout {
@@ -1298,8 +1377,8 @@ textarea {
 }
 
 .clientShell .surfacePanel {
-  border-right: 1px solid rgba(11, 18, 32, 0.1);
-  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+  border-right: 1px solid var(--line-strong);
+  border-bottom: 1px solid var(--line-strong);
 }
 
 .clientShell .surfacePanel h3 {
@@ -1397,9 +1476,9 @@ textarea {
   }
 
   .clientShell .clientHero,
-  .clientShell .walletStatePanel,
-  .clientShell .surfacePanel {
-    border-radius: 14px;
+  .clientShell .surfacePanel,
+  .clientShell .activityTicker {
+    border-radius: 0;
   }
 
   .clientShell .clientHero {
@@ -1412,23 +1491,1061 @@ textarea {
 
   .clientShell .heroNumbers,
   .clientShell .transactionChecklist {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .clientShell .heroNumbers strong {
     font-size: 21px;
   }
 
-  .clientShell .walletStatePanel {
-    gap: 8px;
-    padding: 12px;
-  }
-
-  .clientShell .walletStatePanel .stateRow {
-    padding: 12px;
-  }
-
   .clientShell .surfacePanel {
     padding: 14px;
+  }
+}
+
+/* Client launchpad refresh */
+.clientShell main {
+  background:
+    linear-gradient(90deg, rgba(0, 47, 167, 0.06) 1px, transparent 1px),
+    linear-gradient(rgba(17, 17, 17, 0.07) 1px, transparent 1px),
+    var(--surface);
+  background-size: 56px 56px;
+}
+
+.clientShell .topBar {
+  max-width: 1120px;
+  padding: 28px 24px 16px;
+}
+
+.clientShell .topBar h1 {
+  font-size: 34px;
+  letter-spacing: 0;
+}
+
+.clientShell .section {
+  max-width: 1120px;
+}
+
+.clientShell .clientOverview {
+  display: grid;
+  grid-template-columns: 1fr;
+  border: 1px solid rgba(11, 18, 32, 0.16);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.clientShell .clientHero {
+  border: 0;
+  padding: 30px;
+}
+
+.clientHeroTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.clientKicker {
+  margin: 0;
+  color: var(--blue);
+  letter-spacing: 0;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  border: 1px solid rgba(6, 118, 71, 0.28);
+  border-radius: 999px;
+  background: rgba(6, 118, 71, 0.08);
+  color: var(--green);
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.clientShell .clientHero h3 {
+  max-width: 720px;
+  margin: 18px 0 0;
+  color: var(--ink-strong);
+  font-size: 58px;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+.clientLead {
+  max-width: 680px;
+  margin: 16px 0 0;
+  color: var(--muted-2);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.clientShell .heroNumbers {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 28px;
+  border-color: rgba(11, 18, 32, 0.16);
+}
+
+.clientShell .heroNumbers div {
+  border-color: rgba(11, 18, 32, 0.16);
+  padding: 18px;
+}
+
+.clientShell .heroNumbers strong {
+  color: var(--ink-strong);
+  font-size: 24px;
+}
+
+.clientShell .activityTicker {
+  margin-top: 16px;
+  border: 1px solid rgba(11, 18, 32, 0.16);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.activityTickerHead {
+  min-height: 58px;
+  padding: 14px 18px;
+  border-bottom-color: rgba(11, 18, 32, 0.12);
+}
+
+.activityTickerHead > div {
+  display: grid;
+  gap: 4px;
+}
+
+.activityTickerHead span,
+.activityTickerHead small {
+  color: var(--muted-2);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.activityTickerHead strong {
+  color: var(--ink-strong);
+  font-size: 18px;
+  line-height: 1.15;
+}
+
+.activityList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+.activityItem {
+  min-width: 0;
+  border: 0;
+  border-right: 1px solid rgba(11, 18, 32, 0.1);
+  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+  border-left: 4px solid var(--green);
+  border-radius: 0;
+  background: var(--surface);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.activityItem:nth-child(2n) {
+  border-right: 0;
+}
+
+.activityItem.grant {
+  border-left-color: var(--blue);
+}
+
+.activityMeta,
+.activityMain {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.activityMeta time,
+.activityMain span,
+.activityMain small {
+  color: var(--muted-2);
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.activityMain strong {
+  color: var(--ink-strong);
+  font-size: 16px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.activityType.purchase,
+.activityType.grant {
+  border-radius: 999px;
+  padding: 5px 8px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.activityType.purchase {
+  background: rgba(6, 118, 71, 0.1);
+  color: var(--green);
+}
+
+.activityType.grant {
+  background: rgba(0, 47, 167, 0.1);
+  color: var(--blue);
+}
+
+.activityEmpty {
+  padding: 20px 18px;
+  color: var(--muted-2);
+  background: var(--panel-2);
+}
+
+.clientShell .splitLayout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.92fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.clientShell .surfacePanel {
+  border-color: rgba(11, 18, 32, 0.16);
+  border-radius: 8px;
+}
+
+.clientShell .surfacePanel h3 {
+  font-size: 22px;
+}
+
+.clientShell .transactionChecklist {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 980px) {
+  .clientShell .clientOverview,
+  .clientShell .splitLayout,
+  .activityList {
+    grid-template-columns: 1fr;
+  }
+
+  .activityItem,
+  .activityItem:nth-child(2n) {
+    border-right: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .clientShell .topBar {
+    padding: 16px 12px 10px;
+  }
+
+  .clientShell .topBar h1 {
+    font-size: 25px;
+  }
+
+  .clientShell .section {
+    margin-inline: 10px;
+  }
+
+  .clientShell .clientHero {
+    padding: 20px;
+  }
+
+  .clientShell .clientHero h3 {
+    font-size: 36px;
+  }
+
+  .clientShell .heroNumbers,
+  .clientShell .transactionChecklist,
+  .activityMeta,
+  .activityMain {
+    grid-template-columns: 1fr;
+  }
+
+  .activityMeta,
+  .activityMain {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+/* Floating purchase activity */
+.activityTicker.floatingActivity {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+  width: min(540px, calc(100vw - 48px));
+  margin: 0;
+  border: 1px solid rgba(11, 18, 32, 0.18);
+  border-radius: 8px;
+  background: var(--surface);
+  overflow: hidden;
+  animation: purchaseToastIn 360ms ease-out;
+}
+
+@keyframes purchaseToastIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Compact horizontal purchase toast */
+.floatingActivity .activityMarquee {
+  height: 50px;
+  overflow: hidden;
+}
+
+.floatingActivity .activityTrack {
+  display: flex;
+  width: max-content;
+  height: 50px;
+  animation: purchaseToastMarquee 24s linear infinite;
+}
+
+.floatingActivity .activityTrack:hover {
+  animation-play-state: paused;
+}
+
+.floatingActivity .activityToast {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 50px;
+  min-width: max-content;
+  border-right: 1px solid rgba(11, 18, 32, 0.1);
+  border-left: 4px solid var(--green);
+  background: var(--surface);
+  padding: 0 14px 0 12px;
+}
+
+.activityToast strong,
+.activityToast span,
+.activityToast small,
+.activityToast time {
+  white-space: nowrap;
+}
+
+.activityToast strong {
+  color: var(--ink-strong);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.activityToast span,
+.activityToast small,
+.activityToast time {
+  color: var(--muted-2);
+  font-size: 13px;
+  line-height: 1;
+}
+
+@keyframes purchaseToastMarquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 640px) {
+  .activityTicker.floatingActivity {
+    right: 12px;
+    bottom: 12px;
+    left: 12px;
+    width: auto;
+  }
+
+  .floatingActivity .activityMarquee,
+  .floatingActivity .activityTrack,
+  .floatingActivity .activityToast {
+    height: 46px;
+  }
+
+  .floatingActivity .activityToast {
+    gap: 9px;
+    padding-right: 12px;
+  }
+
+  .activityToast small,
+  .activityToast time {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floatingActivity .activityTrack {
+    animation: none;
+  }
+}
+
+/* ui-ux-pro-max client refresh */
+.clientShell {
+  --client-bg: #101114;
+  --client-bg-2: #171717;
+  --client-surface: #181b22;
+  --client-surface-2: #20242d;
+  --client-border: rgba(248, 250, 252, 0.14);
+  --client-border-strong: rgba(245, 158, 11, 0.34);
+  --client-text: #f8fafc;
+  --client-muted: #aab3c2;
+  --client-subtle: #747f91;
+  --client-primary: #f59e0b;
+  --client-primary-2: #fbbf24;
+  --client-accent: #8b5cf6;
+  --client-success: #34d399;
+  --client-danger: #fb7185;
+  --client-shadow: 0 20px 60px rgba(0, 0, 0, 0.36);
+  color: var(--client-text);
+  font-family: "Exo 2", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+}
+
+.clientShell main {
+  min-height: 100dvh;
+  padding-bottom: 72px;
+  background:
+    linear-gradient(rgba(245, 158, 11, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139, 92, 246, 0.08) 1px, transparent 1px),
+    linear-gradient(145deg, #101114 0%, #151923 44%, #1d1710 100%);
+  background-size: 64px 64px, 64px 64px, auto;
+  position: relative;
+  overflow: clip;
+}
+
+.clientShell main::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, transparent 0 34%, rgba(245, 158, 11, 0.08) 34% 34.2%, transparent 34.2% 100%),
+    linear-gradient(245deg, transparent 0 58%, rgba(139, 92, 246, 0.1) 58% 58.2%, transparent 58.2% 100%);
+  opacity: 0.9;
+}
+
+.clientShell .topBar,
+.clientShell .section {
+  position: relative;
+  z-index: 1;
+}
+
+.clientShell .topBar {
+  max-width: 1180px;
+  padding: 30px 24px 18px;
+  color: var(--client-text);
+}
+
+.clientShell .topBar p {
+  color: var(--client-primary-2);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.clientShell .topBar h1 {
+  color: var(--client-text);
+  font-family: "Orbitron", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: clamp(30px, 5vw, 48px);
+  font-weight: 800;
+  letter-spacing: 0;
+  text-shadow: 0 0 24px rgba(245, 158, 11, 0.12);
+}
+
+.clientShell .walletCluster {
+  gap: 10px;
+}
+
+.clientShell .button,
+.clientShell .linkButton,
+.clientShell .iconButton {
+  min-height: 46px;
+  border-color: var(--client-border);
+  border-radius: 8px;
+  background: rgba(248, 250, 252, 0.06);
+  color: var(--client-text);
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, color 180ms ease;
+  touch-action: manipulation;
+}
+
+.clientShell .button.primary,
+.clientShell .linkButton.heroCta {
+  border-color: rgba(245, 158, 11, 0.74);
+  background: linear-gradient(180deg, var(--client-primary-2), var(--client-primary));
+  color: #111827;
+  box-shadow: 0 10px 28px rgba(245, 158, 11, 0.18);
+}
+
+.clientShell .button.secondary {
+  border-color: rgba(139, 92, 246, 0.42);
+  background: rgba(139, 92, 246, 0.14);
+  color: #ddd6fe;
+}
+
+.clientShell .button:hover:not(:disabled),
+.clientShell .linkButton:hover,
+.clientShell .iconButton:hover:not(:disabled) {
+  border-color: var(--client-primary);
+  background-color: rgba(245, 158, 11, 0.14);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.clientShell .button:focus-visible,
+.clientShell .linkButton:focus-visible,
+.clientShell input:focus-visible,
+.clientShell select:focus-visible,
+.clientShell textarea:focus-visible {
+  outline: 3px solid rgba(245, 158, 11, 0.34);
+  outline-offset: 2px;
+}
+
+.clientShell .section {
+  max-width: 1180px;
+  margin: 0 auto 24px;
+  color: var(--client-text);
+}
+
+.clientShell .clientOverview {
+  border: 1px solid var(--client-border-strong);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.06), rgba(248, 250, 252, 0.02)),
+    var(--client-surface);
+  box-shadow: var(--client-shadow);
+}
+
+.clientShell .clientHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 28px;
+  align-items: stretch;
+  padding: clamp(22px, 4vw, 40px);
+  background: transparent;
+  color: var(--client-text);
+}
+
+.clientHeroContent {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.clientHeroTop {
+  gap: 14px;
+}
+
+.clientKicker,
+.panelKicker {
+  color: var(--client-primary-2);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.clientShell .statusPill {
+  min-height: 34px;
+  border-color: rgba(52, 211, 153, 0.34);
+  background: rgba(52, 211, 153, 0.12);
+  color: #bbf7d0;
+  box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.08);
+}
+
+.clientShell .clientHero h3 {
+  max-width: 760px;
+  margin: 20px 0 0;
+  color: var(--client-text);
+  font-family: "Orbitron", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: clamp(42px, 7vw, 76px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+}
+
+.clientLead {
+  max-width: 680px;
+  margin: 18px 0 0;
+  color: var(--client-muted);
+  font-size: 17px;
+  line-height: 1.65;
+}
+
+.clientShell .clientHeroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 0;
+  border: 0;
+}
+
+.clientShell .heroNumbers {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 32px;
+  border: 0;
+}
+
+.clientShell .heroNumbers div {
+  border: 1px solid var(--client-border);
+  border-radius: 8px;
+  background: rgba(248, 250, 252, 0.055);
+  padding: 16px;
+}
+
+.clientShell .heroNumbers span,
+.clientShell .transactionChecklist span,
+.activityTickerHead span,
+.activityTickerHead small,
+.activityToast span,
+.activityToast small,
+.activityToast time {
+  color: var(--client-muted);
+}
+
+.clientShell .heroNumbers strong {
+  color: var(--client-text);
+  font-family: "Orbitron", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: clamp(20px, 2.2vw, 28px);
+  letter-spacing: 0;
+}
+
+.tokenVisual {
+  min-height: 100%;
+  border: 1px solid var(--client-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(245, 158, 11, 0.16), rgba(139, 92, 246, 0.08)),
+    #12151b;
+  display: grid;
+  grid-template-rows: minmax(190px, 1fr) auto auto;
+  gap: 18px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.tokenDisk {
+  align-self: center;
+  justify-self: center;
+  width: min(220px, 80%);
+  aspect-ratio: 1;
+  border: 1px solid rgba(245, 158, 11, 0.34);
+  border-radius: 50%;
+  background:
+    repeating-linear-gradient(90deg, rgba(248, 250, 252, 0.06) 0 1px, transparent 1px 18px),
+    linear-gradient(145deg, rgba(245, 158, 11, 0.18), rgba(139, 92, 246, 0.16));
+  display: grid;
+  place-items: center;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.34), 0 18px 40px rgba(0, 0, 0, 0.28);
+}
+
+.tokenDisk img {
+  width: 58%;
+  height: auto;
+  border-radius: 8px;
+  filter: drop-shadow(0 12px 22px rgba(0, 0, 0, 0.35));
+}
+
+.tokenVisualMeta {
+  display: grid;
+  gap: 6px;
+}
+
+.tokenVisualMeta span,
+.tokenVisualMeta small {
+  color: var(--client-muted);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.tokenVisualMeta strong {
+  color: var(--client-primary-2);
+  font-family: "Orbitron", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 22px;
+  letter-spacing: 0;
+}
+
+.tokenBars {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr 0.65fr 1fr;
+  gap: 8px;
+  align-items: end;
+  min-height: 46px;
+}
+
+.tokenBars span {
+  display: block;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, var(--client-primary-2), rgba(139, 92, 246, 0.7));
+}
+
+.tokenBars span:nth-child(1) {
+  height: 44%;
+}
+
+.tokenBars span:nth-child(2) {
+  height: 78%;
+}
+
+.tokenBars span:nth-child(3) {
+  height: 58%;
+}
+
+.tokenBars span:nth-child(4) {
+  height: 100%;
+}
+
+.clientShell .activityTicker {
+  margin-top: 18px;
+  border: 1px solid var(--client-border);
+  border-radius: 8px;
+  background: rgba(24, 27, 34, 0.92);
+  color: var(--client-text);
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+}
+
+.clientShell .activityTickerHead {
+  min-height: 58px;
+  border-bottom: 1px solid var(--client-border);
+  background: rgba(248, 250, 252, 0.035);
+}
+
+.activityTickerHead strong {
+  color: var(--client-text);
+}
+
+.clientShell .activityMarquee {
+  overflow: hidden;
+}
+
+.clientShell .activityTrack {
+  display: flex;
+  width: max-content;
+  padding: 12px;
+  gap: 10px;
+}
+
+.clientShell .activityTrack.scrolling {
+  animation: tickerScroll 30s linear infinite;
+}
+
+.clientShell .activityTrack.scrolling:hover {
+  animation-play-state: paused;
+}
+
+.clientShell .activityToast {
+  min-width: 250px;
+  min-height: 62px;
+  border: 1px solid var(--client-border);
+  border-left: 4px solid var(--client-success);
+  border-radius: 8px;
+  background: rgba(248, 250, 252, 0.055);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 7px 10px;
+  align-items: center;
+  padding: 12px;
+}
+
+.clientShell .activityToast.grant {
+  border-left-color: var(--client-accent);
+}
+
+.activityToast strong {
+  color: var(--client-text);
+  overflow-wrap: anywhere;
+}
+
+.clientShell .activityType.purchase {
+  background: rgba(52, 211, 153, 0.12);
+  color: #bbf7d0;
+}
+
+.clientShell .activityType.grant {
+  background: rgba(139, 92, 246, 0.16);
+  color: #ddd6fe;
+}
+
+.clientShell .activityEmpty {
+  padding: 18px;
+  background: rgba(248, 250, 252, 0.035);
+  color: var(--client-muted);
+}
+
+.clientShell .splitLayout {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.9fr);
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.clientShell .surfacePanel {
+  border: 1px solid var(--client-border);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(248, 250, 252, 0.06), rgba(248, 250, 252, 0.025)),
+    var(--client-surface);
+  color: var(--client-text);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.22);
+}
+
+.panelHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.panelHeader h3 {
+  margin: 4px 0 0;
+}
+
+.clientShell .surfacePanel h3 {
+  color: var(--client-text);
+  font-family: "Orbitron", "Microsoft YaHei", system-ui, sans-serif;
+  font-size: 24px;
+  letter-spacing: 0;
+}
+
+.panelStatus {
+  min-height: 32px;
+  border: 1px solid var(--client-border);
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.06);
+  color: var(--client-primary-2);
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.clientShell .progressWrap {
+  margin-bottom: 20px;
+}
+
+.clientShell .progressMeta {
+  color: var(--client-muted);
+}
+
+.clientShell .progressTrack {
+  height: 14px;
+  border: 1px solid rgba(245, 158, 11, 0.28);
+  border-radius: 999px;
+  background: rgba(248, 250, 252, 0.08);
+}
+
+.clientShell .progressFill {
+  background: linear-gradient(90deg, var(--client-primary), var(--client-accent));
+}
+
+.clientShell .field > span {
+  color: var(--client-muted);
+}
+
+.clientShell input,
+.clientShell select,
+.clientShell textarea {
+  min-height: 48px;
+  border-color: var(--client-border);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.62);
+  color: var(--client-text);
+}
+
+.clientShell input[readonly] {
+  background: rgba(248, 250, 252, 0.08);
+  color: var(--client-muted);
+}
+
+.clientShell input:focus,
+.clientShell select:focus,
+.clientShell textarea:focus {
+  border-color: var(--client-primary);
+  box-shadow: inset 0 0 0 1px rgba(245, 158, 11, 0.32);
+}
+
+.clientShell .transactionChecklist {
+  gap: 10px;
+}
+
+.clientShell .transactionChecklist div {
+  border-color: var(--client-border);
+  border-radius: 8px;
+  background: rgba(248, 250, 252, 0.045);
+}
+
+.clientShell .transactionChecklist strong {
+  color: var(--client-text);
+}
+
+.clientShell .dataList {
+  border-color: var(--client-border);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(248, 250, 252, 0.035);
+}
+
+.clientShell .dataList span,
+.clientShell .dataList strong {
+  border-color: var(--client-border);
+}
+
+.clientShell .dataList span {
+  background: rgba(248, 250, 252, 0.055);
+  color: var(--client-muted);
+}
+
+.clientShell .dataList strong {
+  color: var(--client-text);
+}
+
+.clientShell .notice {
+  max-width: 1180px;
+  margin: 14px auto 0;
+  border-color: var(--client-border);
+  border-radius: 8px;
+  background: rgba(24, 27, 34, 0.96);
+  color: var(--client-text);
+}
+
+.clientShell .notice button {
+  color: var(--client-primary-2);
+}
+
+@media (max-width: 980px) {
+  .clientShell .clientHero,
+  .clientShell .splitLayout,
+  .clientShell .heroNumbers {
+    grid-template-columns: 1fr;
+  }
+
+  .tokenVisual {
+    grid-template-columns: minmax(140px, 0.7fr) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    align-items: center;
+  }
+
+  .tokenDisk {
+    width: min(180px, 100%);
+    grid-row: 1 / 3;
+  }
+
+  .tokenBars {
+    min-height: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  .clientShell main {
+    padding-bottom: 42px;
+    background-size: 42px 42px, 42px 42px, auto;
+  }
+
+  .clientShell .topBar {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px 12px 12px;
+  }
+
+  .clientShell .topBar h1 {
+    font-size: 27px;
+  }
+
+  .clientShell .walletCluster,
+  .clientShell .clientHeroActions {
+    width: 100%;
+  }
+
+  .clientShell .walletCluster .button,
+  .clientShell .clientHeroActions .linkButton {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .clientShell .section {
+    margin-inline: 10px;
+  }
+
+  .clientShell .clientHero {
+    padding: 18px;
+    gap: 18px;
+  }
+
+  .clientHeroTop,
+  .panelHeader {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .clientShell .clientHero h3 {
+    font-size: 36px;
+  }
+
+  .clientLead {
+    font-size: 16px;
+  }
+
+  .tokenVisual {
+    grid-template-columns: 1fr;
+  }
+
+  .tokenDisk {
+    grid-row: auto;
+    width: 170px;
+  }
+
+  .clientShell .activityTrack {
+    width: 100%;
+    display: grid;
+  }
+
+  .clientShell .activityTrack.scrolling {
+    animation: none;
+  }
+
+  .clientShell .activityToast {
+    min-width: 0;
+    grid-template-columns: 1fr;
+  }
+
+  .clientShell .transactionChecklist {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clientShell .activityTrack.scrolling {
+    animation: none;
+  }
+
+  .clientShell .button,
+  .clientShell .linkButton,
+  .clientShell .iconButton {
+    transition: none;
   }
 }
