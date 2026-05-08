@@ -1,0 +1,74 @@
+{
+  "runAt": "2026-05-08T19:26:43.0583798+08:00",
+  "network": "bscTestnet",
+  "chainId": "97",
+  "rpcReference": "https://bsc-testnet-dataseed.bnbchain.org",
+  "explorer": "https://testnet.bscscan.com",
+  "deployer": "0x744447d8580EB900b199e852C132F626247a36F7",
+  "smokeTestBuyer": "0x9cBf48C7D2890474aa39bD7c11d7E825c9bDA0CE",
+  "contracts": {
+    "mockPaymentToken": {
+      "name": "Mock USDT",
+      "symbol": "mUSDT",
+      "decimals": 18,
+      "address": "0xD9a6F0d3A794314567f4f1cce17aeb76e13B0924",
+      "explorer": "https://testnet.bscscan.com/address/0xD9a6F0d3A794314567f4f1cce17aeb76e13B0924",
+      "deploymentTx": "0x1336dff945135e8b8964d2710dfefa963c5810700a87b60632062b495c1724f2"
+    },
+    "pesToken": {
+      "name": "PES Token",
+      "symbol": "PES",
+      "address": "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
+      "explorer": "https://testnet.bscscan.com/address/0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
+      "deploymentTx": "0x135e4f7099de95761b330d7116e14c968d18628445bcf19489407632b46562c9"
+    },
+    "presaleVesting": {
+      "address": "0x5e353B9F99e5A8EF669Bc8399035c3408A370D66",
+      "explorer": "https://testnet.bscscan.com/address/0x5e353B9F99e5A8EF669Bc8399035c3408A370D66",
+      "deploymentTx": "0xea5075019b92c8a6ee8b9878448573da5c8712cfef0d1e178846163929111533"
+    }
+  },
+  "saleConfig": {
+    "paymentPerPackage": "300",
+    "pesPerPackage": "3000",
+    "maxPackages": "2000",
+    "publicPackageCap": "50",
+    "perWalletPackageLimit": "1",
+    "saleStart": "1778239216",
+    "saleEnd": "1778844316",
+    "launchTime": "1778239515"
+  },
+  "smokeTest": {
+    "presaleFundedPES": "6000000",
+    "buyerMockUSDT": "300",
+    "buyerPurchasedPackages": "1",
+    "buyerAllocatedPES": "3000",
+    "buyerInitialClaimedPES": "600",
+    "buyerCurrentPESAfterSell": "500",
+    "tradingDisabledGuard": "passed",
+    "sellFeeTransfer": {
+      "soldPES": "100",
+      "pairReceivedPES": "98.5",
+      "walletFeesPES": "1",
+      "burnedPES": "0.5"
+    }
+  },
+  "postRunChainState": {
+    "pesTotalSupply": "20999999.5",
+    "presalePesBalance": "5999400",
+    "publicPackagesSold": "1",
+    "totalPackagesAllocated": "1",
+    "tradingEnabled": true
+  },
+  "transactions": {
+    "fundPresale": "https://testnet.bscscan.com/tx/0x3314cbd6651849bb8b2d53720f01356a704d3975b6baab862e8162dfb1ce9a79",
+    "fundBuyerGas": "https://testnet.bscscan.com/tx/0x68a96f67e7d3c461fe2e21af6c7ae57948dee3271f4133f17f5d754e9c91dc83",
+    "mintPayment": "https://testnet.bscscan.com/tx/0x707d5e94d33720f533286f016e179455bcda481241e405a863b39439ba681383",
+    "approvePayment": "https://testnet.bscscan.com/tx/0xd8f0169b660a8e965ab45efc33e97a2453b30cc0d2294dbaa7afc2539ffb1226",
+    "purchasePackage": "https://testnet.bscscan.com/tx/0xaeedaa947cf67ff38af830101aa1d1099fb78f3b7ee63c87c32ab058b26e4734",
+    "claimInitialRelease": "https://testnet.bscscan.com/tx/0x0873daed7ace70571438677468a2cf847a26d2b713fa2515e86a680630fe1abd",
+    "setAmmPair": "https://testnet.bscscan.com/tx/0x1901f9f499137b1fe5d6208a64e0179476ae1fb78092ce602087ae600782750f",
+    "enableTrading": "https://testnet.bscscan.com/tx/0x036f07f673d9b19ccf2b86156f12581d5909fa0086541b1398fbcb72f67e86de",
+    "sellFeeTransfer": "https://testnet.bscscan.com/tx/0xf737d18b2058e816224ffd507f208d5a903f2b9e5efb40eb5cb4ebc79809eb00"
+  }
+}
