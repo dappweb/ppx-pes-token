@@ -59,7 +59,7 @@ a {
 
 .appShell {
   display: grid;
-  grid-template-columns: 88px minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -477,6 +477,120 @@ input[readonly] {
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
+}
+
+.batchControls {
+  margin-top: 14px;
+}
+
+.batchPlan {
+  min-height: 42px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.batchPlan span,
+.batchProgress {
+  border: 1px solid var(--line-strong);
+  background: var(--neutral);
+  padding: 7px 9px;
+}
+
+.batchPlan .batchError {
+  border-color: rgba(180, 35, 24, 0.28);
+  background: rgba(180, 35, 24, 0.08);
+  color: var(--danger);
+}
+
+.batchProgress {
+  margin-top: 14px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.widePanel {
+  grid-column: 1 / -1;
+  border-right: 0;
+}
+
+.allocationToolbar {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1.2fr);
+  gap: 16px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.allocationTableWrap {
+  max-height: 520px;
+  overflow: auto;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+}
+
+.allocationTable {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.allocationTable th,
+.allocationTable td {
+  border-bottom: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.allocationTable th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--neutral);
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.allocationTable td {
+  font-variant-numeric: tabular-nums;
+}
+
+.allocationTable code {
+  color: var(--ink);
+  font-family: Consolas, "SFMono-Regular", monospace;
+  overflow-wrap: anywhere;
+}
+
+.tableActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tableActions button {
+  min-height: 32px;
+  border: 1px solid rgba(21, 94, 239, 0.24);
+  border-radius: 8px;
+  background: var(--blue-2);
+  color: var(--blue);
+  padding: 6px 10px;
+  font-weight: 700;
+}
+
+.emptyState {
+  border: 1px dashed var(--line-strong);
+  background: var(--neutral);
+  color: var(--muted);
+  padding: 14px;
+  font-size: 13px;
 }
 
 .dataList {
@@ -967,6 +1081,13 @@ textarea {
   margin-top: 16px;
 }
 
+.purchaseLimitHint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
 .transactionChecklist div {
   padding: 12px;
   min-width: 0;
@@ -1209,6 +1330,10 @@ textarea {
   }
 
   .adminGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .allocationToolbar {
     grid-template-columns: 1fr;
   }
 }

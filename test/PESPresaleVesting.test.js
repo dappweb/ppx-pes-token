@@ -23,7 +23,7 @@ describe("PESPresaleVesting", function () {
     const saleStart = options.saleStart ?? latest - 10;
     const saleEnd = options.saleEnd ?? latest + 7 * DAY;
     const publicPackageCap = options.publicPackageCap ?? 2000;
-    const perWalletPackageLimit = options.perWalletPackageLimit ?? 50;
+    const perWalletPackageLimit = options.perWalletPackageLimit ?? 1;
     const launchTime = options.launchTime ?? 0;
 
     const Presale = await ethers.getContractFactory("PESPresaleVesting");
@@ -75,8 +75,24 @@ describe("PESPresaleVesting", function () {
     expect(await presale.publicPackagesSold()).to.equal(1);
   });
 
+  it("limits each public wallet to one package", async function () {
+    const { presale, buyer } = await deployFixture();
+
+    await expect(presale.connect(buyer).purchasePackages(2)).to.be.revertedWithCustomError(
+      presale,
+      "PerWalletLimitExceeded"
+    );
+
+    await presale.connect(buyer).purchasePackages(1);
+
+    await expect(presale.connect(buyer).purchasePackages(1)).to.be.revertedWithCustomError(
+      presale,
+      "PerWalletLimitExceeded"
+    );
+  });
+
   it("supports owner allocations while preserving the 2,000 package total cap", async function () {
-    const { presale, buyer, secondBuyer, strategicAccount } = await deployFixture();
+    const { presale, buyer, secondBuyer, strategicAccount } = await deployFixture({ perWalletPackageLimit: 50 });
 
     await expect(presale.grantAllocation(strategicAccount.address, 1950))
       .to.emit(presale, "AdminAllocationGranted")

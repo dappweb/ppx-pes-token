@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ethers } from "ethers";
 import { useAccount, useChainId, useWalletClient } from "wagmi";
@@ -25,10 +25,14 @@ import {
 import { ERC20_ABI, PES_TOKEN_ABI, PRESALE_ABI } from "./lib/abis.js";
 
 const CONFIG_KEY = "pes-token-console-config";
+const ADMIN_ALLOCATIONS_CACHE_KEY = "pes-admin-allocations-cache";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const DEFAULT_BSC_TESTNET_RPC_URL = "https://bsc-testnet-rpc.publicnode.com";
 const EVENT_LOOKBACK_BLOCKS = Number(import.meta.env.VITE_EVENT_LOOKBACK_BLOCKS || "20000");
+const ADMIN_ALLOCATION_SCAN_BLOCKS = Number(import.meta.env.VITE_ADMIN_ALLOCATION_SCAN_BLOCKS || "500000");
+const EVENT_QUERY_BLOCK_RANGE = Number(import.meta.env.VITE_EVENT_QUERY_BLOCK_RANGE || "50000");
 const OWNER_ALLOCATION_TARGET = 1950n;
+const DEFAULT_ALLOCATION_CHUNK_SIZE = 100;
 const DEFAULT_BSC_TESTNET_CONFIG = {
   pesAddress: "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
   presaleAddress: "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
@@ -60,6 +64,33 @@ function loadConfig() {
     return config;
   } catch {
     return emptyConfig;
+  }
+}
+
+function loadCachedAdminAllocationRows(presaleAddress) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(ADMIN_ALLOCATIONS_CACHE_KEY) || "{}");
+    return (cache[presaleAddress] || []).map((row) => ({
+      ...row,
+      packages: BigInt(row.packages || "0"),
+      tokenAmount: BigInt(row.tokenAmount || "0"),
+    }));
+  } catch {
+    return [];
+  }
+}
+
+function saveCachedAdminAllocationRows(presaleAddress, rows) {
+  try {
+    const cache = JSON.parse(localStorage.getItem(ADMIN_ALLOCATIONS_CACHE_KEY) || "{}");
+    cache[presaleAddress] = rows.map((row) => ({
+      ...row,
+      packages: row.packages.toString(),
+      tokenAmount: row.tokenAmount.toString(),
+    }));
+    localStorage.setItem(ADMIN_ALLOCATIONS_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    // Local cache is best-effort; chain events remain the source of truth.
   }
 }
 
@@ -99,6 +130,15 @@ function positiveRemaining(total, used) {
   const totalValue = BigInt(total || 0n);
   const usedValue = BigInt(used || 0n);
   return totalValue > usedValue ? totalValue - usedValue : 0n;
+}
+
+function minBigInt(a, b) {
+  return a < b ? a : b;
+}
+
+function parsePositiveBigIntInput(value) {
+  const text = String(value || "").trim();
+  return /^[1-9]\d*$/.test(text) ? BigInt(text) : 0n;
 }
 
 function formatBps(value) {
@@ -178,10 +218,80 @@ function parseBatchAllocations(text) {
   return lines.map((line, index) => {
     const [account, packages] = line.split(/[,\s]+/).filter(Boolean);
     const normalized = normalizeAddress(account);
-    if (!normalized || !packages) {
+    if (!normalized || !packages || !/^[1-9]\d*$/.test(packages)) {
       throw new Error(`第 ${index + 1} 行格式错误`);
     }
     return { account: normalized, packages: BigInt(packages) };
+  });
+}
+
+function parseAllocationChunkSize(value) {
+  const chunkSize = Number(value || DEFAULT_ALLOCATION_CHUNK_SIZE);
+  if (!Number.isInteger(chunkSize) || chunkSize <= 0) {
+    throw new Error("批次大小必须是正整数");
+  }
+  return chunkSize;
+}
+
+function chunkAllocations(entries, chunkSize) {
+  const chunks = [];
+  for (let offset = 0; offset < entries.length; offset += chunkSize) {
+    chunks.push(entries.slice(offset, offset + chunkSize));
+  }
+  return chunks;
+}
+
+async function queryFilterInRanges(contract, filter, fromBlock, toBlock, rangeSize = EVENT_QUERY_BLOCK_RANGE) {
+  if (fromBlock > toBlock) return [];
+
+  const logs = [];
+  for (let start = fromBlock; start <= toBlock; start += rangeSize) {
+    const end = Math.min(toBlock, start + rangeSize - 1);
+    try {
+      logs.push(...(await contract.queryFilter(filter, start, end)));
+    } catch (error) {
+      console.warn(`Skipped event range ${start}-${end}: ${getErrorMessage(error)}`);
+    }
+  }
+  return logs;
+}
+
+function buildAdminAllocationRows(grantLogs, seedRows = []) {
+  const byAccount = new Map();
+
+  for (const row of seedRows) {
+    byAccount.set(row.account, { ...row });
+  }
+
+  for (const event of grantLogs) {
+    const account = normalizeAddress(event.args?.account || event.args?.[0]);
+    if (!account) continue;
+
+    const previous = byAccount.get(account) || {
+      account,
+      packages: 0n,
+      tokenAmount: 0n,
+      grantCount: 0,
+      lastBlock: 0,
+      lastLogIndex: 0,
+      lastTransactionHash: "",
+    };
+    const logIndex = event.index ?? event.logIndex ?? 0;
+
+    byAccount.set(account, {
+      ...previous,
+      packages: previous.packages + BigInt(event.args?.packages || event.args?.[1] || 0n),
+      tokenAmount: previous.tokenAmount + BigInt(event.args?.tokenAmount || event.args?.[2] || 0n),
+      grantCount: previous.grantCount + 1,
+      lastBlock: event.blockNumber,
+      lastLogIndex: logIndex,
+      lastTransactionHash: event.transactionHash,
+    });
+  }
+
+  return [...byAccount.values()].sort((a, b) => {
+    if (b.lastBlock !== a.lastBlock) return b.lastBlock - a.lastBlock;
+    return b.lastLogIndex - a.lastLogIndex;
   });
 }
 
@@ -406,7 +516,14 @@ function ClientPanel({
   const publicRemaining = positiveRemaining(totalPackages, totalAllocated);
   const ownerAllocated = totalAllocated > publicSold ? totalAllocated - publicSold : 0n;
   const ownerRemaining = positiveRemaining(OWNER_ALLOCATION_TARGET, ownerAllocated);
-  const paymentRequired = data?.paymentPerPackage ? data.paymentPerPackage * BigInt(buyPackages || "0") : 0n;
+  const walletPackageLimit = data?.perWalletPackageLimit || 1n;
+  const accountPackages = data?.allocation?.packages || 0n;
+  const walletRemaining = positiveRemaining(walletPackageLimit, accountPackages);
+  const purchaseLimit = minBigInt(publicRemaining, walletRemaining);
+  const requestedBuyPackages = parsePositiveBigIntInput(buyPackages);
+  const payableBuyPackages =
+    purchaseLimit > 0n && requestedBuyPackages > purchaseLimit ? purchaseLimit : requestedBuyPackages;
+  const paymentRequired = data?.paymentPerPackage ? data.paymentPerPackage * payableBuyPackages : 0n;
   const allowance = payment?.allowance || 0n;
   const needsApprove = paymentRequired > allowance;
   const presaleAddress = normalizeAddress(config.presaleAddress);
@@ -511,16 +628,35 @@ function ClientPanel({
             <Field label="购买份数">
               <input
                 min="1"
-                max={publicRemaining.toString()}
+                max={purchaseLimit > 0n ? purchaseLimit.toString() : "1"}
                 type="number"
                 value={buyPackages}
-                onChange={(event) => setBuyPackages(event.target.value)}
+                onChange={(event) => {
+                  const nextValue = event.target.value;
+                  if (nextValue === "") {
+                    setBuyPackages("");
+                    return;
+                  }
+
+                  if (!/^\d+$/.test(nextValue)) return;
+                  const parsed = BigInt(nextValue);
+                  if (parsed === 0n) {
+                    setBuyPackages("1");
+                    return;
+                  }
+
+                  const capped = purchaseLimit > 0n ? minBigInt(parsed, purchaseLimit) : 1n;
+                  setBuyPackages(capped.toString());
+                }}
               />
             </Field>
             <Field label="需支付">
               <input readOnly value={`${formatUnits(paymentRequired, payment?.decimals || 18, 2)} ${payment?.symbol || "USDT"}`} />
             </Field>
           </div>
+          <p className="purchaseLimitHint">
+            每个账号限购 {formatInteger(walletPackageLimit)} 份，当前账号剩余 {formatInteger(purchaseLimit)} 份。
+          </p>
           <div className="transactionChecklist" aria-label="购买前检查">
             <div>
               <span>付款代币</span>
@@ -532,7 +668,7 @@ function ClientPanel({
             </div>
             <div>
               <span>接收额度</span>
-              <strong>{formatUnits((data?.pesPerPackage || 0n) * BigInt(buyPackages || "0"))} PES</strong>
+              <strong>{formatUnits((data?.pesPerPackage || 0n) * payableBuyPackages)} PES</strong>
             </div>
             <div>
               <span>私募合约</span>
@@ -543,7 +679,7 @@ function ClientPanel({
             <Button
               icon={ShoppingCart}
               busy={busy === "approvePurchase"}
-              disabled={!account || !contractsReady || paymentRequired === 0n || publicRemaining === 0n}
+              disabled={!account || !contractsReady || paymentRequired === 0n || purchaseLimit === 0n}
               onClick={() =>
                 runTransaction(needsApprove ? "授权并购买 PES 份额" : "购买 PES 份额", "approvePurchase", async ({
                   paymentToken,
@@ -559,7 +695,7 @@ function ClientPanel({
                     notify("info", "授权已确认，继续购买 PES 份额");
                   }
 
-                  return presale.purchasePackages(BigInt(buyPackages || "0"));
+                  return presale.purchasePackages(payableBuyPackages);
                 })
               }
           >
@@ -614,6 +750,8 @@ function AdminPanel({
   config,
   setConfig,
   account,
+  adminAllocations = [],
+  recordAdminAllocations,
   busy,
   runTransaction,
   refreshData,
@@ -635,6 +773,9 @@ function AdminPanel({
   const [sellFees, setSellFees] = useState({ liquidityBps: "50", operationsBps: "50", burnBps: "50" });
   const [allocation, setAllocation] = useState({ account: "", packages: "1" });
   const [batchText, setBatchText] = useState("");
+  const [batchChunkSize, setBatchChunkSize] = useState(String(DEFAULT_ALLOCATION_CHUNK_SIZE));
+  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
+  const [allocationSearch, setAllocationSearch] = useState("");
   const [feeExclusion, setFeeExclusion] = useState({ account: "", excluded: "true" });
 
   useEffect(() => {
@@ -676,6 +817,31 @@ function AdminPanel({
   const adminTotalAllocated = data?.totalPackagesAllocated || 0n;
   const adminOwnerAllocated = adminTotalAllocated > adminPublicSold ? adminTotalAllocated - adminPublicSold : 0n;
   const adminRemaining = positiveRemaining(data?.maxPackages || 0n, adminTotalAllocated);
+  const visibleAdminAllocations = useMemo(() => {
+    const keyword = allocationSearch.trim().toLowerCase();
+    if (!keyword) return adminAllocations;
+    return adminAllocations.filter((entry) => entry.account.toLowerCase().includes(keyword));
+  }, [adminAllocations, allocationSearch]);
+  const batchSummary = useMemo(() => {
+    if (!batchText.trim()) return null;
+    try {
+      const parsed = parseBatchAllocations(batchText);
+      const chunkSize = parseAllocationChunkSize(batchChunkSize);
+      const uniqueAccounts = new Set(parsed.map((entry) => entry.account.toLowerCase()));
+      const totalPackages = parsed.reduce((sum, entry) => sum + entry.packages, 0n);
+
+      return {
+        count: parsed.length,
+        chunkSize,
+        duplicateCount: parsed.length - uniqueAccounts.size,
+        totalPackages,
+        chunks: Math.ceil(parsed.length / chunkSize),
+        exceedsRemaining: totalPackages > adminRemaining,
+      };
+    } catch (error) {
+      return { error: getErrorMessage(error) };
+    }
+  }, [adminRemaining, batchChunkSize, batchText]);
 
   return (
     <Section
@@ -935,22 +1101,130 @@ function AdminPanel({
               placeholder="0x0000000000000000000000000000000000000001,1"
             />
           </Field>
+          <div className="formGrid two batchControls">
+            <Field label="每批地址数">
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={batchChunkSize}
+                onChange={(event) => setBatchChunkSize(event.target.value)}
+              />
+            </Field>
+            <div className="batchPlan">
+              {batchSummary?.error ? (
+                <span className="batchError">{batchSummary.error}</span>
+              ) : batchSummary ? (
+                <>
+                  <span>{formatInteger(BigInt(batchSummary.count))} 个地址</span>
+                  <span>{formatInteger(batchSummary.totalPackages)} 份</span>
+                  <span>{batchSummary.chunks} 笔交易</span>
+                  {batchSummary.duplicateCount ? <span>{batchSummary.duplicateCount} 个重复地址</span> : null}
+                  {batchSummary.exceedsRemaining ? <span className="batchError">超过剩余份数</span> : null}
+                </>
+              ) : (
+                <span>建议 1950 个账号按 100 个一批提交</span>
+              )}
+            </div>
+          </div>
+          {batchProgress.total ? (
+            <div className="batchProgress">
+              已完成 {batchProgress.current} / {batchProgress.total} 批
+            </div>
+          ) : null}
           <Button
             icon={Upload}
             busy={busy === "grantBatch"}
-            disabled={!isOwner || !batchText.trim()}
+            disabled={!isOwner || !batchText.trim() || Boolean(batchSummary?.error || batchSummary?.exceedsRemaining)}
             onClick={() =>
-              runTransaction("批量分配", "grantBatch", async ({ presale }) => {
+              runTransaction("批量分配", "grantBatch", async ({ presale, notify }) => {
                 const parsed = parseBatchAllocations(batchText);
-                return presale.grantAllocations(
-                  parsed.map((entry) => entry.account),
-                  parsed.map((entry) => entry.packages)
-                );
+                const chunkSize = parseAllocationChunkSize(batchChunkSize);
+                const chunks = chunkAllocations(parsed, chunkSize);
+                setBatchProgress({ current: 0, total: chunks.length });
+
+                for (let index = 0; index < chunks.length; index += 1) {
+                  const chunk = chunks[index];
+                  const start = index * chunkSize + 1;
+                  const end = start + chunk.length - 1;
+
+                  notify("info", `批量分配 ${index + 1}/${chunks.length}: 等待钱包确认 ${start}-${end}`);
+                  const tx = await presale.grantAllocations(
+                    chunk.map((entry) => entry.account),
+                    chunk.map((entry) => entry.packages)
+                  );
+                  notify("info", `批量分配 ${index + 1}/${chunks.length}: 等待链上确认 ${tx.hash}`);
+                  const receipt = await tx.wait();
+                  recordAdminAllocations?.(chunk, receipt?.blockNumber || 0, tx.hash);
+                  setBatchProgress({ current: index + 1, total: chunks.length });
+                }
               })
             }
           >
             批量分配
           </Button>
+        </div>
+
+        <div className="surfacePanel widePanel">
+          <h3>已发放账户管理</h3>
+          <div className="allocationToolbar">
+            <Field label="搜索账户">
+              <input
+                value={allocationSearch}
+                onChange={(event) => setAllocationSearch(event.target.value)}
+                placeholder="输入地址筛选"
+              />
+            </Field>
+            <div className="batchPlan">
+              <span>{formatInteger(BigInt(adminAllocations.length))} 个账户</span>
+              <span>显示 {formatInteger(BigInt(visibleAdminAllocations.length))} 个</span>
+            </div>
+          </div>
+
+          {visibleAdminAllocations.length ? (
+            <div className="allocationTableWrap">
+              <table className="allocationTable">
+                <thead>
+                  <tr>
+                    <th>账户</th>
+                    <th>份数</th>
+                    <th>PES</th>
+                    <th>发放次数</th>
+                    <th>最近区块</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visibleAdminAllocations.map((entry) => (
+                    <tr key={entry.account}>
+                      <td>
+                        <code>{entry.account}</code>
+                      </td>
+                      <td>{formatInteger(entry.packages)}</td>
+                      <td>{formatUnits(entry.tokenAmount)} PES</td>
+                      <td>{entry.grantCount}</td>
+                      <td>{formatInteger(BigInt(entry.lastBlock || 0))}</td>
+                      <td>
+                        <div className="tableActions">
+                          <button type="button" onClick={() => navigator.clipboard.writeText(entry.account)}>
+                            复制
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAllocation({ account: entry.account, packages: String(entry.packages || 1n) })}
+                          >
+                            回填
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="emptyState">暂无已发放账户；批量分配确认后会从链上事件自动回显。</div>
+          )}
         </div>
 
         <div className="surfacePanel">
@@ -1064,10 +1338,12 @@ export default function App() {
   const [token, setToken] = useState(null);
   const [payment, setPayment] = useState(null);
   const [saleEvents, setSaleEvents] = useState([]);
+  const [adminAllocations, setAdminAllocations] = useState([]);
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState("");
   const [buyPackages, setBuyPackages] = useState("1");
   const [path, setPath] = useState(() => window.location.pathname);
+  const adminAllocationScanRef = useRef({ presaleAddress: "", scannedToBlock: 0, rows: [] });
 
   const isAdminRoute = path.startsWith("/admin");
   const pageLabel = isAdminRoute ? "PES Admin Console" : "PES Token Launchpad";
@@ -1263,6 +1539,33 @@ export default function App() {
           presale.queryFilter(presale.filters.PackagesPurchased(), fromBlock, latestBlock),
           presale.queryFilter(presale.filters.AdminAllocationGranted(), fromBlock, latestBlock),
         ]);
+
+        const presaleAddress = normalizeAddress(config.presaleAddress);
+        const scanState = adminAllocationScanRef.current;
+        const firstScanBlock =
+          Number(import.meta.env.VITE_ADMIN_ALLOCATION_FROM_BLOCK || "") ||
+          Math.max(0, latestBlock - ADMIN_ALLOCATION_SCAN_BLOCKS);
+        const shouldResetScan = scanState.presaleAddress !== presaleAddress || !scanState.rows.length;
+        const allocationFromBlock = shouldResetScan ? firstScanBlock : scanState.scannedToBlock + 1;
+        const allocationGrantLogs = await queryFilterInRanges(
+          presale,
+          presale.filters.AdminAllocationGranted(),
+          allocationFromBlock,
+          latestBlock
+        );
+        const cachedRows = shouldResetScan ? loadCachedAdminAllocationRows(presaleAddress) : [];
+        const nextAdminAllocations = buildAdminAllocationRows(
+          allocationGrantLogs,
+          shouldResetScan ? (allocationGrantLogs.length ? [] : cachedRows) : scanState.rows
+        );
+        adminAllocationScanRef.current = {
+          presaleAddress,
+          scannedToBlock: latestBlock,
+          rows: nextAdminAllocations,
+        };
+        saveCachedAdminAllocationRows(presaleAddress, nextAdminAllocations);
+        setAdminAllocations(nextAdminAllocations);
+
         const rawSaleEvents = [
           ...purchaseLogs.map((event) => ({
             type: "purchase",
@@ -1309,11 +1612,51 @@ export default function App() {
         setSaleEvents(nextSaleEvents);
       } catch {
         setSaleEvents([]);
+        setAdminAllocations([]);
+        adminAllocationScanRef.current = { presaleAddress: "", scannedToBlock: 0, rows: [] };
       }
     } catch (error) {
       setNotice({ type: "error", message: getErrorMessage(error) });
     }
   }, [account, config.paymentTokenAddress, config.pesAddress, config.presaleAddress, readProvider]);
+
+  const recordAdminAllocations = useCallback(
+    (entries, blockNumber = 0, transactionHash = "") => {
+      const presaleAddress = normalizeAddress(config.presaleAddress);
+      if (!presaleAddress || !entries?.length) return;
+
+      const pesPerPackage = data?.pesPerPackage || 0n;
+      const syntheticLogs = entries.map((entry, index) => ({
+        args: {
+          account: entry.account,
+          packages: entry.packages,
+          tokenAmount: entry.packages * pesPerPackage,
+        },
+        blockNumber,
+        index,
+        logIndex: index,
+        transactionHash,
+      }));
+
+      setAdminAllocations((currentRows) => {
+        const seedRows =
+          adminAllocationScanRef.current.presaleAddress === presaleAddress
+            ? adminAllocationScanRef.current.rows
+            : currentRows;
+        const nextRows = buildAdminAllocationRows(syntheticLogs, seedRows);
+
+        adminAllocationScanRef.current = {
+          ...adminAllocationScanRef.current,
+          presaleAddress,
+          scannedToBlock: Math.max(adminAllocationScanRef.current.scannedToBlock || 0, Number(blockNumber || 0)),
+          rows: nextRows,
+        };
+        saveCachedAdminAllocationRows(presaleAddress, nextRows);
+        return nextRows;
+      });
+    },
+    [config.presaleAddress, data?.pesPerPackage]
+  );
 
   const runTransaction = useCallback(
     async (label, key, callback) => {
@@ -1344,8 +1687,10 @@ export default function App() {
           presaleAddress,
           notify: (type, message) => setNotice({ type, message }),
         });
-        setNotice({ type: "info", message: `${label}: 等待链上确认 ${tx.hash}` });
-        await tx.wait();
+        if (tx?.hash) {
+          setNotice({ type: "info", message: `${label}: 等待链上确认 ${tx.hash}` });
+          await tx.wait();
+        }
         setNotice({ type: "success", message: `${label}: 已确认` });
         await refreshData();
       } catch (error) {
@@ -1411,20 +1756,6 @@ export default function App() {
 
   return (
     <div className={`appShell ${isAdminRoute ? "adminShell" : "clientShell"}`}>
-      <aside className="rail">
-        <div className="mark">PES</div>
-        <nav>
-          {isAdminRoute ? (
-            <>
-              <a href="#config">01</a>
-              <a href="#admin">02</a>
-            </>
-          ) : (
-            <a href="#client">01</a>
-          )}
-        </nav>
-      </aside>
-
       <main>
         <header className="topBar">
           <div>
@@ -1457,8 +1788,7 @@ export default function App() {
                   </a>
                 </div>
                 <span>Chain {chainId || "--"}</span>
-                <span>{account ? shortAddress(account) : "未连接钱包"}</span>
-                <IconButton label="复制钱包地址" icon={Copy} disabled={!account} onClick={() => navigator.clipboard.writeText(account)} />
+                {account ? <IconButton label="复制钱包地址" icon={Copy} onClick={() => navigator.clipboard.writeText(account)} /> : null}
               </>
             ) : null}
             <RainbowWalletButton />
@@ -1481,6 +1811,8 @@ export default function App() {
                 config={config}
                 setConfig={setConfig}
                 account={account}
+                adminAllocations={adminAllocations}
+                recordAdminAllocations={recordAdminAllocations}
                 busy={busy}
                 runTransaction={runTransaction}
                 refreshData={refreshData}
