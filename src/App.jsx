@@ -126,6 +126,11 @@ function formatInteger(value) {
   return BigInt(value).toLocaleString("en-US");
 }
 
+function formatPlainInteger(value) {
+  if (value === undefined || value === null) return "--";
+  return BigInt(value).toString();
+}
+
 function positiveRemaining(total, used) {
   const totalValue = BigInt(total || 0n);
   const usedValue = BigInt(used || 0n);
@@ -390,10 +395,8 @@ function Progress({ value, total }) {
   return (
     <div className="progressWrap" role="progressbar" aria-label="公开认购进度" aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}>
       <div className="progressMeta">
-        <span>{percent.toFixed(2)}%</span>
-        <span>
-          {formatInteger(value || 0n)} / {formatInteger(total || 0n)}
-        </span>
+        <span>{percent.toFixed(2)}</span>
+        <span>{formatPlainInteger(value || 0n)}/{formatPlainInteger(total || 0n)}</span>
       </div>
       <div className="progressTrack">
         <div className="progressFill" style={{ width: `${percent}%` }} />
@@ -410,10 +413,9 @@ function ActivityTicker({ events }) {
     <div className={`activityTicker ${visibleEvents.length ? "" : "empty"}`} aria-label="用户购买动态">
       <div className="activityTickerHead">
         <div>
-          <span>LIVE ACTIVITY</span>
-          <strong>链上认购动态</strong>
+          <strong>线上认购状态</strong>
         </div>
-        <small>{visibleEvents.length ? `最近 ${visibleEvents.length} 笔` : "等待新记录"}</small>
+        <small>{visibleEvents.length ? "最近一笔" : "等待新记录"}</small>
       </div>
       {visibleEvents.length ? (
         <div className="activityMarquee">
@@ -528,9 +530,9 @@ function ClientPanel({
   const needsApprove = paymentRequired > allowance;
   const presaleAddress = normalizeAddress(config.presaleAddress);
   const paymentLabel = `${formatUnits(data?.paymentPerPackage || 0n, payment?.decimals || 18, 2)} ${payment?.symbol || "USDT"}`;
-  const progressLabel = `${formatInteger(totalAllocated)} / ${formatInteger(totalPackages)}`;
+  const progressLabel = `${formatPlainInteger(totalAllocated)}/${formatPlainInteger(totalPackages)}`;
   const saleState = saleStatus(data);
-  const purchaseButtonText = !account ? "连接钱包后购买 PES 份额" : needsApprove ? "授权并购买 PES 份额" : "购买 PES 份额";
+  const purchaseButtonText = !account ? "立即认购" : needsApprove ? "授权并购买" : "立即认购";
 
   return (
     <Section
@@ -586,7 +588,7 @@ function ClientPanel({
 
           <div className="tokenVisual" aria-hidden="true">
             <div className="tokenDisk">
-              <img src="/favicon.svg" alt="" />
+              <img src="/pes-coin.svg" alt="" />
             </div>
             <div className="tokenVisualMeta">
               <span>BSC TESTNET</span>
@@ -1757,11 +1759,46 @@ export default function App() {
   return (
     <div className={`appShell ${isAdminRoute ? "adminShell" : "clientShell"}`}>
       <main>
+        {!isAdminRoute ? (
+          <div className="mobileStatusBar" aria-hidden="true">
+            <span>9:41</span>
+            <span className="mobileStatusIcons">
+              <span />
+              <span />
+              <span />
+            </span>
+          </div>
+        ) : null}
         <header className="topBar">
+          {!isAdminRoute && account ? <div className="clientWalletPill">{shortAddress(account)}</div> : null}
           <div>
             <p>{pageLabel}</p>
-            <h1>{pageTitle}</h1>
+            <h1>
+              {isAdminRoute ? (
+                pageTitle
+              ) : (
+                <>
+                  <span className="heroTitleBrand">PES</span>
+                  <span className="heroTitleText">私募认购</span>
+                </>
+              )}
+            </h1>
+            {!isAdminRoute ? (
+              <p className="heroSubtitle">
+                <span>构建高效数字生态</span>
+                <span>探索未来无限可能</span>
+              </p>
+            ) : null}
           </div>
+          {!isAdminRoute ? (
+            <div className="heroOrnaments" aria-hidden="true">
+              <span className="heroSpecimen" />
+              <span className="ornament ornamentA" />
+              <span className="ornament ornamentB" />
+              <span className="ornament ornamentC" />
+              <span className="ornament ornamentD" />
+            </div>
+          ) : null}
           <div className="walletCluster">
             {isAdminRoute ? (
               <>

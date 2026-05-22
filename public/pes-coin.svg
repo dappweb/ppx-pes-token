@@ -1,0 +1,28 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="coinFace" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(68 48) rotate(55) scale(108)">
+      <stop stop-color="#FFE77B"/>
+      <stop offset="0.35" stop-color="#FFC12B"/>
+      <stop offset="0.75" stop-color="#D78308"/>
+      <stop offset="1" stop-color="#8E4F00"/>
+    </radialGradient>
+    <linearGradient id="rim" x1="26" y1="26" x2="158" y2="158" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF09B"/>
+      <stop offset="0.48" stop-color="#FFB319"/>
+      <stop offset="1" stop-color="#8B4B00"/>
+    </linearGradient>
+    <filter id="shadow" x="4" y="8" width="172" height="172" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#2E1700" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <g filter="url(#shadow)">
+    <circle cx="90" cy="84" r="66" fill="url(#rim)"/>
+    <circle cx="90" cy="84" r="56" fill="url(#coinFace)" stroke="#FFE47A" stroke-width="3"/>
+    <circle cx="90" cy="84" r="42" fill="#E6950C" fill-opacity="0.42" stroke="#FFDB56" stroke-width="2"/>
+    <path d="M47 84c0-24 19-43 43-43s43 19 43 43-19 43-43 43-43-19-43-43Z" stroke="#AF6500" stroke-width="2" stroke-dasharray="3 5" opacity="0.75"/>
+    <text x="90" y="94" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="30" font-weight="900" fill="#A85C00" letter-spacing="1">PES</text>
+    <text x="90" y="91" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-size="30" font-weight="900" fill="#FFD45A" letter-spacing="1">PES</text>
+    <circle cx="63" cy="62" r="5" fill="#FFE58A" opacity="0.78"/>
+    <circle cx="116" cy="106" r="4" fill="#AA5F00" opacity="0.42"/>
+  </g>
+</svg>
