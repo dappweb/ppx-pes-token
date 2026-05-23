@@ -421,10 +421,9 @@ function ActivityTicker({ events }) {
         <div className="activityMarquee">
           <div className={`activityTrack ${visibleEvents.length > 1 ? "scrolling" : ""}`}>
             {tickerEvents.map((event, index) => {
-              const isGrant = event.type === "grant";
               return (
-                <div className={`activityToast ${isGrant ? "grant" : "purchase"}`} key={`${event.transactionHash}-${event.logIndex}-${index}`}>
-                  <span className={`activityType ${isGrant ? "grant" : "purchase"}`}>{isGrant ? "Admin 发放" : "用户购买"}</span>
+                <div className="activityToast purchase" key={`${event.transactionHash}-${event.logIndex}-${index}`}>
+                  <span className="activityType purchase">用户认购</span>
                   <strong>{shortAddress(event.account)}</strong>
                   <span>{formatInteger(event.packages)} 份</span>
                   <small>{formatUnits(event.tokenAmount)} PES</small>
