@@ -1,5 +1,14 @@
 {
   "name": "ppx-pes-token",
   "pages_build_output_dir": "./dist",
-  "compatibility_date": "2026-05-08"
+  "compatibility_date": "2026-05-08",
+  "kv_namespaces": [
+    {
+      "binding": "PES_IP_POLICY",
+      "id": "4e95e1a114404fd3977e2fbda56cc9c4"
+    }
+  ],
+  "vars": {
+    "PES_ADMIN_WALLET": "0x744447d8580EB900b199e852C132F626247a36F7"
+  }
 }

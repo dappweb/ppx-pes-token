@@ -541,6 +541,15 @@ input[readonly] {
   font-size: 13px;
 }
 
+.compactTable {
+  max-height: 260px;
+  margin-top: 14px;
+}
+
+.compactTable .allocationTable {
+  min-width: 520px;
+}
+
 .allocationTable th,
 .allocationTable td {
   border-bottom: 1px solid var(--line);
