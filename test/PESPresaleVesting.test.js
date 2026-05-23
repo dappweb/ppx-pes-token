@@ -141,6 +141,33 @@ describe("PESPresaleVesting", function () {
     expect(await presale.claimableAmount(buyer.address)).to.equal(0);
   });
 
+  it("lets the owner configure vesting period time and period count before launch", async function () {
+    const { presale, buyer } = await deployFixture();
+
+    await presale.connect(buyer).purchasePackages(1);
+
+    await expect(presale.setVestingConfig(12 * 60 * 60, 8))
+      .to.emit(presale, "VestingConfigUpdated")
+      .withArgs(12 * 60 * 60, 8);
+
+    const launchTime = (await time.latest()) + 100;
+    await presale.setLaunchTime(launchTime);
+
+    await time.increaseTo(launchTime);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("600"));
+
+    await time.increaseTo(launchTime + 12 * 60 * 60);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("900"));
+
+    await time.increaseTo(launchTime + 8 * 12 * 60 * 60);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("3000"));
+
+    await expect(presale.setVestingConfig(DAY, 40)).to.be.revertedWithCustomError(
+      presale,
+      "LaunchAlreadyStarted"
+    );
+  });
+
   it("protects already allocated PES from owner recovery", async function () {
     const { presale, pesToken, buyer, fundsWallet } = await deployFixture();
 

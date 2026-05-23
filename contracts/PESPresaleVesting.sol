@@ -12,8 +12,6 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
 
     uint16 public constant BPS_DENOMINATOR = 10_000;
     uint16 public constant INITIAL_RELEASE_BPS = 2_000;
-    uint16 public constant DAILY_RELEASE_BPS = 200;
-    uint16 public constant VESTING_DAYS = 40;
 
     IERC20 public immutable pesToken;
     IERC20 public immutable paymentToken;
@@ -27,6 +25,8 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
     uint64 public saleStart;
     uint64 public saleEnd;
     uint64 public launchTime;
+    uint64 public vestingPeriodSeconds = 1 days;
+    uint16 public vestingPeriods = 40;
 
     uint256 public publicPackagesSold;
     uint256 public totalPackagesAllocated;
@@ -46,6 +46,7 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
     event Claimed(address indexed account, uint256 amount);
     event SaleWindowUpdated(uint64 saleStart, uint64 saleEnd);
     event LaunchTimeUpdated(uint64 launchTime);
+    event VestingConfigUpdated(uint64 vestingPeriodSeconds, uint16 vestingPeriods);
     event FundsWalletUpdated(address indexed fundsWallet);
     event PackageConfigUpdated(
         uint256 paymentPerPackage,
@@ -118,6 +119,14 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
 
         launchTime = newLaunchTime;
         emit LaunchTimeUpdated(newLaunchTime);
+    }
+
+    function setVestingConfig(uint64 newVestingPeriodSeconds, uint16 newVestingPeriods) external onlyOwner {
+        if (launchTime != 0 && block.timestamp >= launchTime) {
+            revert LaunchAlreadyStarted();
+        }
+
+        _setVestingConfig(newVestingPeriodSeconds, newVestingPeriods);
     }
 
     function setFundsWallet(address newFundsWallet) external onlyOwner {
@@ -206,16 +215,13 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
             return 0;
         }
 
-        uint256 elapsedDays = (block.timestamp - launchTime) / 1 days;
-        if (elapsedDays > VESTING_DAYS) {
-            elapsedDays = VESTING_DAYS;
+        uint256 elapsedPeriods = (block.timestamp - launchTime) / vestingPeriodSeconds;
+        if (elapsedPeriods >= vestingPeriods) {
+            return allocation.tokens;
         }
 
-        uint256 releaseBps = INITIAL_RELEASE_BPS + (elapsedDays * DAILY_RELEASE_BPS);
-        if (releaseBps > BPS_DENOMINATOR) {
-            releaseBps = BPS_DENOMINATOR;
-        }
-
+        uint256 remainingBps = BPS_DENOMINATOR - INITIAL_RELEASE_BPS;
+        uint256 releaseBps = INITIAL_RELEASE_BPS + ((remainingBps * elapsedPeriods) / vestingPeriods);
         return (allocation.tokens * releaseBps) / BPS_DENOMINATOR;
     }
 
@@ -266,6 +272,16 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
 
         fundsWallet = newFundsWallet;
         emit FundsWalletUpdated(newFundsWallet);
+    }
+
+    function _setVestingConfig(uint64 newVestingPeriodSeconds, uint16 newVestingPeriods) internal {
+        if (newVestingPeriodSeconds == 0 || newVestingPeriods == 0) {
+            revert InvalidAmount();
+        }
+
+        vestingPeriodSeconds = newVestingPeriodSeconds;
+        vestingPeriods = newVestingPeriods;
+        emit VestingConfigUpdated(newVestingPeriodSeconds, newVestingPeriods);
     }
 
     function _setPackageConfig(

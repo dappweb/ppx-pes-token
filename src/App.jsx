@@ -236,6 +236,34 @@ function fromDateTimeLocal(value) {
   return BigInt(Math.floor(new Date(value).getTime() / 1000));
 }
 
+function secondsToDays(value) {
+  const seconds = Number(value || 0n);
+  if (!seconds) return "";
+  return String(seconds / 86_400);
+}
+
+function daysToSeconds(value) {
+  const days = Number(String(value || "").trim());
+  if (!Number.isFinite(days) || days <= 0) return 0n;
+  return BigInt(Math.round(days * 86_400));
+}
+
+function formatPeriodSeconds(value) {
+  const seconds = Number(value || 0n);
+  if (!seconds) return "--";
+  if (seconds % 86_400 === 0) return `${seconds / 86_400} 天`;
+  if (seconds % 3_600 === 0) return `${seconds / 3_600} 小时`;
+  return `${seconds} 秒`;
+}
+
+async function optionalContractCall(call, fallbackValue) {
+  try {
+    return { supported: true, value: await call() };
+  } catch {
+    return { supported: false, value: fallbackValue };
+  }
+}
+
 function getErrorMessage(error) {
   const message =
     error?.shortMessage ||
@@ -592,6 +620,8 @@ function ClientPanel({
   const progressLabel = `${formatPlainInteger(totalAllocated)}/${formatPlainInteger(totalPackages)}`;
   const saleState = saleStatus(data);
   const purchaseButtonText = !account ? "立即认购" : needsApprove ? "授权并购买" : "立即认购";
+  const vestingPeriodLabel = formatPeriodSeconds(data?.vestingPeriodSeconds || 86_400n);
+  const vestingPeriodsLabel = formatInteger(data?.vestingPeriods || 40n);
   const ipLimitLabel = ipPolicy?.whitelisted
     ? "当前 IP 已在白名单，不限制购买份数。"
     : ipPolicyReady
@@ -620,7 +650,7 @@ function ClientPanel({
             </div>
             <h3>{formatUnits(data?.pesPerPackage || 0n)} PES / 份</h3>
             <p className="clientLead">
-              每份支付 {paymentLabel}，上线后先释放 20%，剩余部分每日释放 2%，40 天释放完毕。
+              每份支付 {paymentLabel}，上线后先释放 20%，剩余部分按 {vestingPeriodsLabel} 个周期释放，每周期 {vestingPeriodLabel}。
             </p>
             <div className="clientHeroActions">
               <a className="linkButton heroCta" href="#purchase-panel">
@@ -656,7 +686,7 @@ function ClientPanel({
             </div>
             <div className="tokenVisualMeta">
               <span>BSC TESTNET</span>
-              <strong>20% + 2%/day</strong>
+              <strong>20% + {vestingPeriodsLabel} periods</strong>
               <small>Vesting Schedule</small>
             </div>
             <div className="tokenBars">
@@ -850,6 +880,7 @@ function AdminPanel({
 }) {
   const [saleForm, setSaleForm] = useState({ start: "", end: "" });
   const [launchForm, setLaunchForm] = useState("");
+  const [vestingForm, setVestingForm] = useState({ periodDays: "1", periods: "40" });
   const [packageForm, setPackageForm] = useState({
     paymentPerPackage: "300",
     pesPerPackage: "3000",
@@ -872,6 +903,10 @@ function AdminPanel({
   useEffect(() => {
     setSaleForm({ start: toDateTimeLocal(data?.saleStart), end: toDateTimeLocal(data?.saleEnd) });
     setLaunchForm(toDateTimeLocal(data?.launchTime));
+    setVestingForm({
+      periodDays: secondsToDays(data?.vestingPeriodSeconds || 86_400n),
+      periods: String(data?.vestingPeriods || 40n),
+    });
     setPackageForm({
       paymentPerPackage: formatUnits(data?.paymentPerPackage || 0n, payment?.decimals || 18, 2).replace(/,/g, ""),
       pesPerPackage: formatUnits(data?.pesPerPackage || 0n, 18, 2).replace(/,/g, ""),
@@ -1023,6 +1058,45 @@ function AdminPanel({
           >
             保存上线时间
           </Button>
+
+          <div className="divider" />
+          <h4>释放周期</h4>
+          <div className="formGrid two">
+            <Field label="周期时间(天)">
+              <input
+                type="number"
+                min="0.0001"
+                step="0.0001"
+                value={vestingForm.periodDays}
+                onChange={(event) => setVestingForm({ ...vestingForm, periodDays: event.target.value })}
+              />
+            </Field>
+            <Field label="周期数">
+              <input
+                type="number"
+                min="1"
+                step="1"
+                value={vestingForm.periods}
+                onChange={(event) => setVestingForm({ ...vestingForm, periods: event.target.value })}
+              />
+            </Field>
+          </div>
+          <Button
+            icon={SlidersHorizontal}
+            variant="secondary"
+            busy={busy === "setVestingConfig"}
+            disabled={!isOwner || !data?.vestingConfigSupported}
+            onClick={() =>
+              runTransaction("设置释放周期", "setVestingConfig", async ({ presale }) =>
+                presale.setVestingConfig(daysToSeconds(vestingForm.periodDays), Number(vestingForm.periods || "0"))
+              )
+            }
+          >
+            保存释放周期
+          </Button>
+          {!data?.vestingConfigSupported ? (
+            <div className="emptyState">当前私募合约不支持释放周期设置；新合约部署后可在这里配置。</div>
+          ) : null}
         </div>
 
         <div className="surfacePanel">
@@ -1655,6 +1729,8 @@ export default function App() {
           presale.saleStart(),
           presale.saleEnd(),
           presale.launchTime(),
+          optionalContractCall(() => presale.vestingPeriodSeconds(), 86_400n),
+          optionalContractCall(() => presale.vestingPeriods(), 40n),
           presale.publicPackagesSold(),
           presale.totalPackagesAllocated(),
           presale.totalTokensAllocated(),
@@ -1693,6 +1769,8 @@ export default function App() {
         saleStart,
         saleEnd,
         launchTime,
+        vestingPeriodSecondsResult,
+        vestingPeriodsResult,
         publicPackagesSold,
         totalPackagesAllocated,
         totalTokensAllocated,
@@ -1737,6 +1815,9 @@ export default function App() {
         saleStart,
         saleEnd,
         launchTime,
+        vestingPeriodSeconds: vestingPeriodSecondsResult.value,
+        vestingPeriods: vestingPeriodsResult.value,
+        vestingConfigSupported: vestingPeriodSecondsResult.supported && vestingPeriodsResult.supported,
         publicPackagesSold,
         totalPackagesAllocated,
         totalTokensAllocated,
