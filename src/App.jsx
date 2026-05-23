@@ -47,12 +47,16 @@ const DEFAULT_IP_POLICY = {
 };
 const DEFAULT_BSC_TESTNET_CONFIG = {
   pesAddress: "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
-  presaleAddress: "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+  presaleAddress: "0x6dAC9d59F92Ff09aC89F2AC7D33B905b534Ac6bc",
   paymentTokenAddress: "0xacD944e910952c020eb129C50921f180c62c3291",
 };
 const LEGACY_BSC_TESTNET_CONFIG = {
   presaleAddress: "0x5e353B9F99e5A8EF669Bc8399035c3408A370D66",
   paymentTokenAddress: "0xD9a6F0d3A794314567f4f1cce17aeb76e13B0924",
+};
+const PREVIOUS_BSC_TESTNET_CONFIG = {
+  presaleAddress: "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+  paymentTokenAddress: "0xacD944e910952c020eb129C50921f180c62c3291",
 };
 
 const emptyConfig = {
@@ -70,6 +74,12 @@ function loadConfig() {
     if (
       normalizeAddress(config.presaleAddress) === normalizeAddress(LEGACY_BSC_TESTNET_CONFIG.presaleAddress) &&
       normalizeAddress(config.paymentTokenAddress) === normalizeAddress(LEGACY_BSC_TESTNET_CONFIG.paymentTokenAddress)
+    ) {
+      return { ...config, ...DEFAULT_BSC_TESTNET_CONFIG };
+    }
+    if (
+      normalizeAddress(config.presaleAddress) === normalizeAddress(PREVIOUS_BSC_TESTNET_CONFIG.presaleAddress) &&
+      normalizeAddress(config.paymentTokenAddress) === normalizeAddress(PREVIOUS_BSC_TESTNET_CONFIG.paymentTokenAddress)
     ) {
       return { ...config, ...DEFAULT_BSC_TESTNET_CONFIG };
     }

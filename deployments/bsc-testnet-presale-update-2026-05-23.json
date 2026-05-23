@@ -1,0 +1,46 @@
+{
+  "runAt": "2026-05-23T12:44:40.008Z",
+  "network": "bscTestnet",
+  "chainId": "97",
+  "deployer": "0x744447d8580EB900b199e852C132F626247a36F7",
+  "oldPresale": "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+  "contracts": {
+    "pesToken": {
+      "address": "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
+      "explorer": "https://testnet.bscscan.com/address/0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0"
+    },
+    "paymentToken": {
+      "address": "0xacD944e910952c020eb129C50921f180c62c3291",
+      "symbol": "USDx5",
+      "decimals": "18",
+      "explorer": "https://testnet.bscscan.com/address/0xacD944e910952c020eb129C50921f180c62c3291"
+    },
+    "presaleVesting": {
+      "address": "0x6dAC9d59F92Ff09aC89F2AC7D33B905b534Ac6bc",
+      "explorer": "https://testnet.bscscan.com/address/0x6dAC9d59F92Ff09aC89F2AC7D33B905b534Ac6bc",
+      "deploymentTx": "0xf2baa787520bd88b5f4913eee98fb7ed6b726bdb33c84e93777a6771e71b374e"
+    }
+  },
+  "saleConfig": {
+    "paymentPerPackage": "300.0",
+    "pesPerPackage": "3000.0",
+    "maxPackages": "1000",
+    "publicPackageCap": "1000",
+    "perWalletPackageLimit": "1",
+    "saleStart": "1778239680",
+    "saleEnd": "1780227180",
+    "launchTime": "0",
+    "vestingPeriodSeconds": "86400",
+    "vestingPeriods": "40"
+  },
+  "oldState": {
+    "totalPackagesAllocated": "19"
+  },
+  "postRunChainState": {
+    "presalePESBalance": "6000000.0"
+  },
+  "transactions": {
+    "deployPresale": "https://testnet.bscscan.com/tx/0xf2baa787520bd88b5f4913eee98fb7ed6b726bdb33c84e93777a6771e71b374e",
+    "fundPresale": "https://testnet.bscscan.com/tx/0x195cda9c52534f9b79170f12935f523195f545c5dd024938c1176e4b741bca0e"
+  }
+}
