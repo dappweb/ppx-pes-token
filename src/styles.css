@@ -1540,22 +1540,166 @@ textarea {
 
 .adminShell .topBar {
   margin: 0 -24px;
-  padding-left: 32px;
-  padding-right: 32px;
+  min-height: 132px;
+  align-items: center;
+  padding: 22px 32px;
+}
+
+.adminShell .topBar h1 {
+  max-width: none;
+  font-size: clamp(34px, 4vw, 54px);
+  line-height: 0.96;
+}
+
+.adminShell .walletCluster {
+  align-items: center;
+  justify-content: flex-end;
 }
 
 .adminShell .section {
   margin-top: 18px;
+  border-color: rgba(11, 18, 32, 0.14);
 }
 
 .adminShell .adminOverview .metric {
-  min-height: 96px;
+  min-height: 104px;
+  padding: 16px;
 }
 
 .adminShell input,
 .adminShell select,
 .adminShell textarea {
   min-height: 40px;
+}
+
+.adminShell .statusStrip {
+  grid-template-columns: 1.05fr 1fr 1fr 0.9fr;
+  background: var(--surface);
+}
+
+.adminShell .statusStrip span {
+  display: flex;
+  align-items: center;
+  min-height: 48px;
+  padding: 12px 16px;
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.adminShell .adminOverview {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.adminShell .adminOverview .metric:nth-child(4n) {
+  border-right: 0;
+}
+
+.adminShell .metric span,
+.adminShell .metric small {
+  font-size: 12px;
+}
+
+.adminShell .metric strong {
+  font-size: clamp(20px, 2vw, 28px);
+}
+
+.adminShell .adminGrid {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+  padding: 16px;
+  background: rgba(247, 247, 248, 0.78);
+}
+
+.adminShell .adminGrid > .surfacePanel {
+  grid-column: span 6;
+  border: 1px solid rgba(11, 18, 32, 0.14);
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.adminShell .adminGrid > .surfacePanel:nth-child(1),
+.adminShell .adminGrid > .surfacePanel:nth-child(3) {
+  grid-column: span 5;
+}
+
+.adminShell .adminGrid > .surfacePanel:nth-child(2),
+.adminShell .adminGrid > .surfacePanel:nth-child(4) {
+  grid-column: span 7;
+}
+
+.adminShell .adminGrid > .widePanel,
+.adminShell .adminGrid > .surfacePanel:nth-child(5),
+.adminShell .adminGrid > .surfacePanel:nth-child(7) {
+  grid-column: 1 / -1;
+}
+
+.adminShell .surfacePanel h3 {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(11, 18, 32, 0.1);
+  font-size: 20px;
+}
+
+.adminShell .surfacePanel h4 {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.adminShell .surfacePanel > .button {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.adminShell .buttonRow {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.adminShell .buttonRow .button {
+  width: 100%;
+}
+
+.adminShell .divider {
+  margin: 20px -22px;
+}
+
+.adminShell .allocationToolbar {
+  grid-template-columns: minmax(260px, 0.55fr) minmax(0, 1fr);
+  align-items: stretch;
+  padding: 14px;
+  border: 1px solid rgba(11, 18, 32, 0.1);
+  background: var(--neutral);
+}
+
+.adminShell .batchPlan {
+  align-content: end;
+  justify-content: flex-end;
+}
+
+.adminShell .allocationTableWrap {
+  max-height: 460px;
+}
+
+.adminShell .allocationTable th {
+  background: #f0f4ff;
+  color: var(--ink);
+}
+
+.adminShell .dataList {
+  border-color: rgba(11, 18, 32, 0.12);
+}
+
+.adminShell .dataList span,
+.adminShell .dataList strong {
+  min-height: 40px;
+  border-color: rgba(11, 18, 32, 0.1);
+}
+
+.adminShell .emptyState {
+  margin-top: 14px;
 }
 
 @media (max-width: 1180px) {
@@ -1566,6 +1710,23 @@ textarea {
 
   .clientShell .clientHero {
     min-height: 0;
+  }
+
+  .adminShell .adminOverview {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .adminShell .adminOverview .metric:nth-child(2n) {
+    border-right: 0;
+  }
+
+  .adminShell .adminGrid > .surfacePanel,
+  .adminShell .adminGrid > .surfacePanel:nth-child(1),
+  .adminShell .adminGrid > .surfacePanel:nth-child(2),
+  .adminShell .adminGrid > .surfacePanel:nth-child(3),
+  .adminShell .adminGrid > .surfacePanel:nth-child(4),
+  .adminShell .adminGrid > .surfacePanel:nth-child(5) {
+    grid-column: 1 / -1;
   }
 }
 
