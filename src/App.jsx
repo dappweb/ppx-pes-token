@@ -415,7 +415,7 @@ function ActivityTicker({ events }) {
         <div>
           <strong>线上认购状态</strong>
         </div>
-        <small>{visibleEvents.length ? "最近一笔" : "等待新记录"}</small>
+        <small>{visibleEvents.length > 1 ? "滚动显示" : visibleEvents.length ? "最近一笔" : "等待新记录"}</small>
       </div>
       {visibleEvents.length ? (
         <div className="activityMarquee">
@@ -425,9 +425,9 @@ function ActivityTicker({ events }) {
                 <div className="activityToast purchase" key={`${event.transactionHash}-${event.logIndex}-${index}`}>
                   <span className="activityType purchase">用户认购</span>
                   <strong>{shortAddress(event.account)}</strong>
-                  <span>{formatInteger(event.packages)} 份</span>
+                  <span className="activityPackages">{formatInteger(event.packages)} 份</span>
                   <small>{formatUnits(event.tokenAmount)} PES</small>
-                  <time dateTime={event.timestamp ? new Date(Number(event.timestamp) * 1000).toISOString() : undefined}>
+                  <time className="activityTime" dateTime={event.timestamp ? new Date(Number(event.timestamp) * 1000).toISOString() : undefined}>
                     {formatActivityTime(event.timestamp)}
                   </time>
                 </div>

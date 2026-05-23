@@ -3175,19 +3175,31 @@ textarea {
   padding: 0 14px 14px;
 }
 
+.clientShell .activityMarquee {
+  max-height: 330px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 18px, #000 calc(100% - 18px), transparent 100%);
+}
+
 .clientShell .activityTrack.scrolling {
-  animation: none;
+  animation: activityScrollY 34s cubic-bezier(0.45, 0, 0.2, 1) infinite;
+  will-change: transform;
+}
+
+.clientShell .activityTrack.scrolling:hover {
+  animation-play-state: paused;
 }
 
 .clientShell .activityToast {
   min-width: 0;
-  min-height: 58px;
+  min-height: 74px;
   border: 0;
   border-radius: 14px;
   background: linear-gradient(90deg, rgba(77, 62, 24, 0.86), rgba(39, 36, 27, 0.86));
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 4px 10px;
+  gap: 3px 10px;
   padding: 12px;
 }
 
@@ -3196,15 +3208,25 @@ textarea {
   grid-row: 1;
 }
 
-.clientShell .activityToast > span:not(.activityType) {
+.clientShell .activityToast > .activityPackages {
   grid-column: 1;
   grid-row: 2;
+}
+
+.clientShell .activityToast > .activityTime {
+  grid-column: 1;
+  grid-row: 3;
+  display: block;
+  color: rgba(255, 226, 156, 0.78);
+  font-size: 12px;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 .clientShell .activityType.purchase,
 .clientShell .activityType.grant {
   grid-column: 2;
-  grid-row: 1 / 3;
+  grid-row: 1 / 4;
   align-self: center;
   border-radius: 999px;
   background: linear-gradient(90deg, #ffc400, #ff9826);
@@ -3212,9 +3234,26 @@ textarea {
   padding: 7px 10px;
 }
 
-.clientShell .activityToast small,
-.clientShell .activityToast time {
+.clientShell .activityToast small {
   display: none;
+}
+
+@keyframes activityScrollY {
+  0%,
+  7% {
+    transform: translateY(0);
+  }
+
+  93%,
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clientShell .activityTrack.scrolling {
+    animation: none;
+  }
 }
 
 .clientShell .splitLayout {
