@@ -1758,18 +1758,12 @@ export default function App() {
   return (
     <div className={`appShell ${isAdminRoute ? "adminShell" : "clientShell"}`}>
       <main>
-        {!isAdminRoute ? (
-          <div className="mobileStatusBar" aria-hidden="true">
-            <span>9:41</span>
-            <span className="mobileStatusIcons">
-              <span />
-              <span />
-              <span />
-            </span>
-          </div>
-        ) : null}
         <header className="topBar">
-          {!isAdminRoute && account ? <div className="clientWalletPill">{shortAddress(account)}</div> : null}
+          {!isAdminRoute ? (
+            <div className="clientWalletLink">
+              <RainbowWalletButton />
+            </div>
+          ) : null}
           <div>
             <p>{pageLabel}</p>
             <h1>
