@@ -16,12 +16,12 @@ This repository contains the on-chain implementation for the PES token launch:
 | Symbol | PES |
 | Total supply | 21,000,000 PES |
 | Liquidity allocation | 15,000,000 PES |
-| Presale allocation | 6,000,000 PES |
+| Presale allocation | 3,000,000 PES |
 | Package price | 300 USDT |
 | PES per package | 3,000 PES |
-| Total packages | 2,000 |
-| Public remaining counter | 2,000 total packages minus all purchased and owner-issued packages |
-| Owner-issued strategic/ecosystem target | 1,950 packages |
+| Total packages | 1,000 |
+| Public remaining counter | 1,000 total packages minus all purchased and owner-issued packages |
+| Owner-issued strategic/ecosystem target | 950 packages |
 | Initial release | 20% after the first elapsed period |
 | Linear release | Remaining 80% / configured period count |
 | Default vesting duration | 41 days |
@@ -107,7 +107,7 @@ Deploy to BSC mainnet:
 npx hardhat run scripts/deploy.js --network bsc
 ```
 
-After deploying both contracts, transfer `6,000,000 PES` to the `PESPresaleVesting` contract so claims can be paid.
+After deploying both contracts, transfer `3,000,000 PES` to the `PESPresaleVesting` contract so claims can be paid.
 
 ## Operations
 
@@ -139,7 +139,7 @@ The simulation uses `eth_call` and `eth_estimateGas`, so it does not sign or cha
 ]
 ```
 
-For 1,950 strategic accounts, keep `packages` as `1` per address or adjust per account as needed. The script sends allocations in chunks controlled by `ALLOCATIONS_CHUNK_SIZE`.
+For 950 strategic accounts, keep `packages` as `1` per address or adjust per account as needed. The script sends allocations in chunks controlled by `ALLOCATIONS_CHUNK_SIZE`.
 
 After creating the DEX pair and adding liquidity, set the AMM pair and enable trading:
 
@@ -156,13 +156,13 @@ The React frontend provides two separated operating surfaces:
 
 Frontend contract addresses can be entered in the UI and saved to browser local storage, or prefilled through `.env` with the `VITE_*` variables. The user client reads recent `PackagesPurchased` and `AdminAllocationGranted` events to show a scrolling purchase/allocation feed and a live remaining counter.
 
-Wallet connection uses RainbowKit and Wagmi. Set `VITE_WALLETCONNECT_PROJECT_ID` for WalletConnect mobile/deep-link wallet support; injected wallets can still connect through the RainbowKit modal during local testing. `VITE_READ_RPC_URL` is used for read-only balance and event queries, while writes are signed through the connected wallet.
+Wallet connection uses RainbowKit and Wagmi. Set `VITE_WALLETCONNECT_PROJECT_ID` for WalletConnect mobile/deep-link wallet support; injected wallets can still connect through the RainbowKit modal during local testing. `VITE_READ_RPC_URL` is used for read-only balance and event queries, while writes are signed through the connected wallet. `VITE_EVENT_QUERY_BLOCK_RANGE` controls event query chunk size; keep it low enough for the selected public RPC.
 
 ## Launch Flow
 
 1. Deploy `PESToken`.
 2. Deploy `PESPresaleVesting` with USDT, package, sale window, and launch parameters.
-3. Transfer `6,000,000 PES` to `PESPresaleVesting` with `npm run fund:presale`.
+3. Transfer `3,000,000 PES` to `PESPresaleVesting` with `npm run fund:presale`.
 4. Grant strategic/ecosystem allocations if needed using `grantAllocation` or `grantAllocations`.
 5. Open public purchase during `SALE_START` to `SALE_END`.
 6. Add initial PES/USDT liquidity using the planned LP allocation.
@@ -171,4 +171,4 @@ Wallet connection uses RainbowKit and Wagmi. Set `VITE_WALLETCONNECT_PROJECT_ID`
 
 ## Notes
 
-The `1,950` owner-issued packages are implemented as transparent admin allocations. They reduce the same 2,000-package remaining counter as public purchases, while keeping the purchase and release mechanics visible on-chain.
+The `950` owner-issued packages are implemented as transparent admin allocations. They reduce the same 1,000-package remaining counter as public purchases, while keeping the purchase and release mechanics visible on-chain.

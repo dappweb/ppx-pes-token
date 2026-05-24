@@ -30,11 +30,12 @@ const IP_POLICY_ENDPOINT = "/api/ip-policy";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const TARGET_CHAIN_ID = "56";
 const TARGET_CHAIN_NAME = "BSC Mainnet";
-const DEFAULT_BSC_RPC_URL = "https://bsc-dataseed.bnbchain.org";
+const DEFAULT_BSC_RPC_URL = "https://bsc-rpc.publicnode.com";
 const EVENT_LOOKBACK_BLOCKS = Number(import.meta.env.VITE_EVENT_LOOKBACK_BLOCKS || "20000");
 const ADMIN_ALLOCATION_SCAN_BLOCKS = Number(import.meta.env.VITE_ADMIN_ALLOCATION_SCAN_BLOCKS || "500000");
-const EVENT_QUERY_BLOCK_RANGE = Number(import.meta.env.VITE_EVENT_QUERY_BLOCK_RANGE || "50000");
-const OWNER_ALLOCATION_TARGET = 1950n;
+const EVENT_QUERY_BLOCK_RANGE = Number(import.meta.env.VITE_EVENT_QUERY_BLOCK_RANGE || "1000");
+const READ_PROVIDER_OPTIONS = { batchMaxCount: 1, batchStallTime: 0 };
+const OWNER_ALLOCATION_TARGET = 950n;
 const DEFAULT_ALLOCATION_CHUNK_SIZE = 100;
 const DEFAULT_IP_POLICY = {
   ok: false,
@@ -362,6 +363,10 @@ async function queryFilterInRanges(contract, filter, fromBlock, toBlock, rangeSi
     }
   }
   return logs;
+}
+
+function createReadProvider(rpcUrl) {
+  return new ethers.JsonRpcProvider(rpcUrl || DEFAULT_BSC_RPC_URL, Number(TARGET_CHAIN_ID), READ_PROVIDER_OPTIONS);
 }
 
 function buildAdminAllocationRows(grantLogs, seedRows = []) {
@@ -906,8 +911,8 @@ function AdminPanel({
   const [packageForm, setPackageForm] = useState({
     paymentPerPackage: "300",
     pesPerPackage: "3000",
-    maxPackages: "2000",
-    publicPackageCap: "2000",
+    maxPackages: "1000",
+    publicPackageCap: "1000",
     perWalletPackageLimit: "1",
   });
   const [ownerTransfer, setOwnerTransfer] = useState({ pesOwner: "", presaleOwner: "" });
@@ -1417,7 +1422,7 @@ function AdminPanel({
                   {batchSummary.exceedsRemaining ? <span className="batchError">超过剩余份数</span> : null}
                 </>
               ) : (
-                <span>建议 1950 个账号按 100 个一批提交</span>
+                <span>建议 950 个账号按 100 个一批提交</span>
               )}
             </div>
           </div>
@@ -1718,7 +1723,6 @@ export default function App() {
   const activeChainId = useChainId();
   const { data: walletClient } = useWalletClient();
   const [config, setConfig] = useState(loadConfig);
-  const [provider, setProvider] = useState(null);
   const [signer, setSigner] = useState(null);
   const [account, setAccount] = useState("");
   const [chainId, setChainId] = useState("");
@@ -1738,10 +1742,10 @@ export default function App() {
   const pageLabel = isAdminRoute ? "PES Admin Console" : "PES Token Launchpad";
   const pageTitle = isAdminRoute ? "PES Admin 管理系统" : "PES 私募认购";
   const fallbackProvider = useMemo(
-    () => new ethers.JsonRpcProvider(import.meta.env.VITE_READ_RPC_URL || DEFAULT_BSC_RPC_URL),
+    () => createReadProvider(import.meta.env.VITE_READ_RPC_URL),
     []
   );
-  const readProvider = chainId && chainId !== TARGET_CHAIN_ID ? fallbackProvider : provider || fallbackProvider;
+  const readProvider = fallbackProvider;
 
   const navigate = useCallback((nextPath) => {
     window.history.pushState({}, "", nextPath);
@@ -1970,10 +1974,18 @@ export default function App() {
       try {
         const latestBlock = await readProvider.getBlockNumber();
         const fromBlock = Math.max(0, latestBlock - EVENT_LOOKBACK_BLOCKS);
-        const [purchaseLogs, grantLogs] = await Promise.all([
-          presale.queryFilter(presale.filters.PackagesPurchased(), fromBlock, latestBlock),
-          presale.queryFilter(presale.filters.AdminAllocationGranted(), fromBlock, latestBlock),
-        ]);
+        const purchaseLogs = await queryFilterInRanges(
+          presale,
+          presale.filters.PackagesPurchased(),
+          fromBlock,
+          latestBlock
+        );
+        const grantLogs = await queryFilterInRanges(
+          presale,
+          presale.filters.AdminAllocationGranted(),
+          fromBlock,
+          latestBlock
+        );
 
         const presaleAddress = normalizeAddress(config.presaleAddress);
         const scanState = adminAllocationScanRef.current;
@@ -2149,7 +2161,6 @@ export default function App() {
       setChainId(activeChainId ? String(activeChainId) : "");
 
       if (!walletClient || !connectedAddress) {
-        setProvider(null);
         setSigner(null);
         return;
       }
@@ -2161,7 +2172,6 @@ export default function App() {
       const nextSigner = await nextProvider.getSigner(connectedAddress);
 
       if (!disposed) {
-        setProvider(nextProvider);
         setSigner(nextSigner);
       }
     };

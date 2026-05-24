@@ -76,7 +76,7 @@ async function main() {
 
   const paymentPerPackage = hre.ethers.parseUnits("300", 18);
   const pesPerPackage = hre.ethers.parseUnits("3000", 18);
-  const presaleFundingAmount = hre.ethers.parseUnits("6000000", 18);
+  const presaleFundingAmount = hre.ethers.parseUnits("3000000", 18);
 
   const mockPayment = await deployContract("MockERC20", ["Mock USDT", "mUSDT", 18], confirmations);
   const pes = await deployContract(
@@ -93,8 +93,8 @@ async function main() {
       deployer.address,
       paymentPerPackage,
       pesPerPackage,
-      2000n,
-      2000n,
+      1000n,
+      1000n,
       1n,
       saleStart,
       saleEnd,
@@ -105,7 +105,7 @@ async function main() {
 
   const fundPresaleTx = await waitForTx(
     pes.contract.transfer(presale.address, presaleFundingAmount),
-    "Fund presale with 6,000,000 PES",
+    "Fund presale with 3,000,000 PES",
     confirmations
   );
   assert.equal(await pes.contract.balanceOf(presale.address), presaleFundingAmount);
@@ -217,8 +217,8 @@ async function main() {
     saleConfig: {
       paymentPerPackage: hre.ethers.formatUnits(paymentPerPackage, 18),
       pesPerPackage: hre.ethers.formatUnits(pesPerPackage, 18),
-      maxPackages: "2000",
-      publicPackageCap: "2000",
+      maxPackages: "1000",
+      publicPackageCap: "1000",
       perWalletPackageLimit: "1",
       saleStart: saleStart.toString(),
       saleEnd: saleEnd.toString(),

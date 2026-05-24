@@ -36,8 +36,8 @@ async function main() {
   const paymentDecimals = Number(envUint("PAYMENT_TOKEN_DECIMALS", "18"));
   const paymentPerPackage = hre.ethers.parseUnits(envUint("PAYMENT_PER_PACKAGE", "300"), paymentDecimals);
   const pesPerPackage = hre.ethers.parseUnits(envUint("PES_PER_PACKAGE", "3000"), 18);
-  const maxPackages = BigInt(envUint("MAX_PACKAGES", "2000"));
-  const publicPackageCap = BigInt(envUint("PUBLIC_PACKAGE_CAP", "2000"));
+  const maxPackages = BigInt(envUint("MAX_PACKAGES", "1000"));
+  const publicPackageCap = BigInt(envUint("PUBLIC_PACKAGE_CAP", "1000"));
   const perWalletPackageLimit = BigInt(envUint("PER_WALLET_PACKAGE_LIMIT", "1"));
   const saleStart = BigInt(envUint("SALE_START", "0"));
   const saleEnd = BigInt(envUint("SALE_END", "0"));
@@ -61,7 +61,7 @@ async function main() {
   await presale.waitForDeployment();
 
   console.log(`PESPresaleVesting deployed: ${await presale.getAddress()}`);
-  console.log("Transfer 6,000,000 PES to the presale contract before users claim.");
+  console.log("Transfer 3,000,000 PES to the presale contract before users claim.");
 }
 
 main().catch((error) => {

@@ -22,7 +22,7 @@ describe("PESPresaleVesting", function () {
     const latest = await time.latest();
     const saleStart = options.saleStart ?? latest - 10;
     const saleEnd = options.saleEnd ?? latest + 7 * DAY;
-    const publicPackageCap = options.publicPackageCap ?? 2000;
+    const publicPackageCap = options.publicPackageCap ?? 1000;
     const perWalletPackageLimit = options.perWalletPackageLimit ?? 1;
     const launchTime = options.launchTime ?? 0;
 
@@ -34,7 +34,7 @@ describe("PESPresaleVesting", function () {
       fundsWallet.address,
       usdt("300"),
       pes("3000"),
-      2000,
+      1000,
       publicPackageCap,
       perWalletPackageLimit,
       saleStart,
@@ -43,7 +43,7 @@ describe("PESPresaleVesting", function () {
     );
     await presale.waitForDeployment();
 
-    await pesToken.transfer(await presale.getAddress(), pes("6000000"));
+    await pesToken.transfer(await presale.getAddress(), pes("3000000"));
     await paymentToken.mint(buyer.address, usdt("30000"));
     await paymentToken.mint(secondBuyer.address, usdt("30000"));
     await paymentToken.connect(buyer).approve(await presale.getAddress(), usdt("30000"));
@@ -91,16 +91,16 @@ describe("PESPresaleVesting", function () {
     );
   });
 
-  it("supports owner allocations while preserving the 2,000 package total cap", async function () {
+  it("supports owner allocations while preserving the 1,000 package total cap", async function () {
     const { presale, buyer, secondBuyer, strategicAccount } = await deployFixture({ perWalletPackageLimit: 50 });
 
-    await expect(presale.grantAllocation(strategicAccount.address, 1950))
+    await expect(presale.grantAllocation(strategicAccount.address, 950))
       .to.emit(presale, "AdminAllocationGranted")
-      .withArgs(strategicAccount.address, 1950, pes("5850000"));
+      .withArgs(strategicAccount.address, 950, pes("2850000"));
 
     await presale.connect(buyer).purchasePackages(50);
 
-    expect(await presale.totalPackagesAllocated()).to.equal(2000);
+    expect(await presale.totalPackagesAllocated()).to.equal(1000);
     expect(await presale.publicPackagesSold()).to.equal(50);
 
     await expect(presale.connect(secondBuyer).purchasePackages(1)).to.be.revertedWithCustomError(presale, "MaxPackageCapExceeded");
@@ -179,10 +179,10 @@ describe("PESPresaleVesting", function () {
     await presale.connect(buyer).purchasePackages(1);
 
     await expect(
-      presale.recoverUnsupportedToken(await pesToken.getAddress(), fundsWallet.address, pes("5997001"))
+      presale.recoverUnsupportedToken(await pesToken.getAddress(), fundsWallet.address, pes("2997001"))
     ).to.be.revertedWithCustomError(presale, "ReservedTokenRecovery");
 
-    await expect(presale.recoverUnsupportedToken(await pesToken.getAddress(), fundsWallet.address, pes("5997000"))).not
+    await expect(presale.recoverUnsupportedToken(await pesToken.getAddress(), fundsWallet.address, pes("2997000"))).not
       .to.be.reverted;
   });
 });

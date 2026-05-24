@@ -1,0 +1,50 @@
+{
+  "runAt": "2026-05-24T06:45:37.099Z",
+  "network": "bsc",
+  "chainId": "56",
+  "blockNumber": 100110369,
+  "blockTime": "2026-05-24T06:45:34.000Z",
+  "configTx": "0x1c45c0b86fdc64203f85abb3fa62b2d419a99e780e11370d15d546a04fa8523b",
+  "contracts": {
+    "pesToken": {
+      "proxy": "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc"
+    },
+    "presaleVesting": {
+      "proxy": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd"
+    },
+    "paymentToken": {
+      "address": "0x55d398326f99059fF775485246999027B3197955",
+      "symbol": "USDT",
+      "decimals": "18",
+      "explorer": "https://bscscan.com/address/0x55d398326f99059fF775485246999027B3197955"
+    }
+  },
+  "saleConfig": {
+    "fundsWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "paymentPerPackage": "300.0",
+    "pesPerPackage": "3000.0",
+    "maxPackages": "1000",
+    "publicPackageCap": "1000",
+    "perWalletPackageLimit": "1",
+    "saleStart": "0",
+    "saleEnd": "0",
+    "launchTime": "0",
+    "vestingPeriodSeconds": "86400",
+    "vestingPeriods": "40",
+    "elapsedVestingPeriods": "0"
+  },
+  "saleState": {
+    "publicPackagesSold": "0",
+    "totalPackagesAllocated": "0",
+    "totalTokensAllocated": "0.0",
+    "totalTokensClaimed": "0.0"
+  },
+  "tokenState": {
+    "ownerPesBalance": "21000000.0",
+    "presalePesBalance": "0.0",
+    "requiredPresaleFunding": "3000000.0"
+  },
+  "transactions": {
+    "setPackageConfig": "https://bscscan.com/tx/0x1c45c0b86fdc64203f85abb3fa62b2d419a99e780e11370d15d546a04fa8523b"
+  }
+}

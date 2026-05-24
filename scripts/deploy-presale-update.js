@@ -99,13 +99,13 @@ async function main() {
   const fundsWallet = optionalAddress("PRESALE_FUNDS_WALLET", oldConfig?.[1] || owner);
   const paymentPerPackage = envBigInt("PAYMENT_PER_PACKAGE_RAW", oldConfig?.[2] || hre.ethers.parseUnits("300", paymentDecimals));
   const pesPerPackage = envBigInt("PES_PER_PACKAGE_RAW", oldConfig?.[3] || hre.ethers.parseUnits("3000", 18));
-  const maxPackages = envBigInt("MAX_PACKAGES", oldConfig?.[4] || 2000n);
-  const publicPackageCap = envBigInt("PUBLIC_PACKAGE_CAP", oldConfig?.[5] || 2000n);
+  const maxPackages = envBigInt("MAX_PACKAGES", 1000n);
+  const publicPackageCap = envBigInt("PUBLIC_PACKAGE_CAP", 1000n);
   const perWalletPackageLimit = envBigInt("PER_WALLET_PACKAGE_LIMIT", oldConfig?.[6] || 1n);
   const saleStart = envBigInt("SALE_START", oldConfig?.[7] || 0n);
   const saleEnd = envBigInt("SALE_END", oldConfig?.[8] || 0n);
   const launchTime = envBigInt("LAUNCH_TIME", "0");
-  const presaleFundingAmount = hre.ethers.parseUnits(process.env.PRESALE_PES_AMOUNT || "6000000", 18);
+  const presaleFundingAmount = hre.ethers.parseUnits(process.env.PRESALE_PES_AMOUNT || "3000000", 18);
 
   const deployerBnb = await provider.getBalance(deployer.address);
   const deployerPes = await pes.balanceOf(deployer.address);
