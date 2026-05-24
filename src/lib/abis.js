@@ -20,6 +20,7 @@ export const PES_TOKEN_ABI = [
   "function setExcludedFromFees(address account, bool excluded)",
   "function setFeeWallets(address newLiquidityWallet, address newOperationsWallet)",
   "function setFeeRates(bool isBuyFee, uint16 liquidityBps, uint16 operationsBps, uint16 burnBps)",
+  "function transferOwnership(address newOwner)",
   "function pause()",
   "function unpause()",
 ];
@@ -42,6 +43,7 @@ export const PRESALE_ABI = [
   "function launchTime() view returns (uint64)",
   "function vestingPeriodSeconds() view returns (uint64)",
   "function vestingPeriods() view returns (uint16)",
+  "function elapsedVestingPeriods() view returns (uint16)",
   "function publicPackagesSold() view returns (uint256)",
   "function totalPackagesAllocated() view returns (uint256)",
   "function totalTokensAllocated() view returns (uint256)",
@@ -57,8 +59,11 @@ export const PRESALE_ABI = [
   "function setSaleWindow(uint64 newSaleStart, uint64 newSaleEnd)",
   "function setLaunchTime(uint64 newLaunchTime)",
   "function setVestingConfig(uint64 newVestingPeriodSeconds, uint16 newVestingPeriods)",
+  "function setElapsedVestingPeriods(uint16 newElapsedVestingPeriods)",
+  "function setVestingConfigAndProgress(uint64 newVestingPeriodSeconds, uint16 newVestingPeriods, uint16 newElapsedVestingPeriods)",
   "function setFundsWallet(address newFundsWallet)",
   "function setPackageConfig(uint256 newPaymentPerPackage, uint256 newPesPerPackage, uint256 newMaxPackages, uint256 newPublicPackageCap, uint256 newPerWalletPackageLimit)",
+  "function transferOwnership(address newOwner)",
   "function pause()",
   "function unpause()",
 ];

@@ -1,0 +1,58 @@
+{
+  "runAt": "2026-05-24T04:05:43.911Z",
+  "network": "bsc",
+  "chainId": "56",
+  "deployer": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+  "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+  "contracts": {
+    "pesToken": {
+      "address": "0x0CcbA398118Ae5F442773d3631f28A3395691fEc",
+      "explorer": "https://bscscan.com/address/0x0CcbA398118Ae5F442773d3631f28A3395691fEc",
+      "deploymentTx": "0xbe5e1b7ff67ce5410690c1018dac61cb9c167d6bf0a77d62b00101bd76c4282c"
+    },
+    "paymentToken": {
+      "address": "0x55d398326f99059fF775485246999027B3197955",
+      "symbol": "USDT",
+      "decimals": "18",
+      "explorer": "https://bscscan.com/address/0x55d398326f99059fF775485246999027B3197955"
+    },
+    "presaleVesting": {
+      "address": "0x126e75C163E99192bDaaFc3Cc82eEA4FcD6a3e17",
+      "explorer": "https://bscscan.com/address/0x126e75C163E99192bDaaFc3Cc82eEA4FcD6a3e17",
+      "deploymentTx": "0x718f29e88da645dbc34e118a469a1a7444dee1d14e306ee43ab10e793cefff9f"
+    }
+  },
+  "tokenState": {
+    "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "liquidityWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "operationsWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "totalSupply": "21000000.0",
+    "ownerPesBalance": "21000000.0",
+    "presalePesBalance": "0.0"
+  },
+  "saleConfig": {
+    "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "fundsWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "paymentToken": "0x55d398326f99059fF775485246999027B3197955",
+    "paymentPerPackage": "300.0",
+    "pesPerPackage": "3000.0",
+    "maxPackages": "2000",
+    "publicPackageCap": "2000",
+    "perWalletPackageLimit": "1",
+    "saleStart": "0",
+    "saleEnd": "0",
+    "launchTime": "0",
+    "vestingPeriodSeconds": "86400",
+    "vestingPeriods": "40",
+    "elapsedVestingPeriods": "0"
+  },
+  "deployerBnb": {
+    "before": "0.047793284450006895",
+    "after": "0.047637585450006895",
+    "spent": "0.000155699"
+  },
+  "transactions": {
+    "deployPes": "https://bscscan.com/tx/0xbe5e1b7ff67ce5410690c1018dac61cb9c167d6bf0a77d62b00101bd76c4282c",
+    "deployPresale": "https://bscscan.com/tx/0x718f29e88da645dbc34e118a469a1a7444dee1d14e306ee43ab10e793cefff9f"
+  }
+}

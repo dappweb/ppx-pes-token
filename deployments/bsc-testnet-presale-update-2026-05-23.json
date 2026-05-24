@@ -1,9 +1,9 @@
 {
-  "runAt": "2026-05-23T12:44:40.008Z",
+  "runAt": "2026-05-23T15:41:07.978Z",
   "network": "bscTestnet",
   "chainId": "97",
   "deployer": "0x744447d8580EB900b199e852C132F626247a36F7",
-  "oldPresale": "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+  "oldPresale": "0x6dAC9d59F92Ff09aC89F2AC7D33B905b534Ac6bc",
   "contracts": {
     "pesToken": {
       "address": "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
@@ -16,9 +16,9 @@
       "explorer": "https://testnet.bscscan.com/address/0xacD944e910952c020eb129C50921f180c62c3291"
     },
     "presaleVesting": {
-      "address": "0x6dAC9d59F92Ff09aC89F2AC7D33B905b534Ac6bc",
-      "explorer": "https://testnet.bscscan.com/address/0x6dAC9d59F92Ff09aC89F2AC7D33B905b534Ac6bc",
-      "deploymentTx": "0xf2baa787520bd88b5f4913eee98fb7ed6b726bdb33c84e93777a6771e71b374e"
+      "address": "0x9DBAB0Ea0E5949740cc2098836939D314b159aE1",
+      "explorer": "https://testnet.bscscan.com/address/0x9DBAB0Ea0E5949740cc2098836939D314b159aE1",
+      "deploymentTx": "0xbdc70bf3f764bab4516fcb8e9c8ed3a0852b3b3babb3b12dffc74cfc33a6dee4"
     }
   },
   "saleConfig": {
@@ -34,13 +34,15 @@
     "vestingPeriods": "40"
   },
   "oldState": {
-    "totalPackagesAllocated": "19"
+    "totalPackagesAllocated": "0"
   },
   "postRunChainState": {
-    "presalePESBalance": "6000000.0"
+    "presalePESBalance": "6000000.0",
+    "oldPresalePESBalance": "0.0"
   },
   "transactions": {
-    "deployPresale": "https://testnet.bscscan.com/tx/0xf2baa787520bd88b5f4913eee98fb7ed6b726bdb33c84e93777a6771e71b374e",
-    "fundPresale": "https://testnet.bscscan.com/tx/0x195cda9c52534f9b79170f12935f523195f545c5dd024938c1176e4b741bca0e"
+    "deployPresale": "https://testnet.bscscan.com/tx/0xbdc70bf3f764bab4516fcb8e9c8ed3a0852b3b3babb3b12dffc74cfc33a6dee4",
+    "fundPresale": "https://testnet.bscscan.com/tx/0x78fc655ae5ea83bd2669fceb423acef4c517d76f1900afa60e60921070850b8b",
+    "migratePresalePES": "https://testnet.bscscan.com/tx/0xbe15c95f9b7c933c7d1aa9bb7893a338db67436d1d2519965b7dfb0dc6bd9c06"
   }
 }

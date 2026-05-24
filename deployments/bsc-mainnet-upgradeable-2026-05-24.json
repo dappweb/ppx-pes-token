@@ -1,0 +1,60 @@
+{
+  "runAt": "2026-05-24T06:01:02.602Z",
+  "network": "bsc",
+  "chainId": "56",
+  "deployer": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+  "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+  "proxyKind": "uups",
+  "contracts": {
+    "pesToken": {
+      "proxy": "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
+      "implementation": "0x7909b4c672059D00765c0963A3ba4f2219E90B82",
+      "explorer": "https://bscscan.com/address/0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
+      "implementationExplorer": "https://bscscan.com/address/0x7909b4c672059D00765c0963A3ba4f2219E90B82",
+      "deploymentTx": "0x054aa5d83aab72b6a22ba8bb6a409ccca3581b24c11b8b1f5698c8bf378942cf"
+    },
+    "paymentToken": {
+      "address": "0x55d398326f99059fF775485246999027B3197955",
+      "symbol": "USDT",
+      "decimals": "18",
+      "explorer": "https://bscscan.com/address/0x55d398326f99059fF775485246999027B3197955"
+    },
+    "presaleVesting": {
+      "proxy": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+      "implementation": "0x5cc66c05592069a83f2795763a9B154C1226b283",
+      "explorer": "https://bscscan.com/address/0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+      "implementationExplorer": "https://bscscan.com/address/0x5cc66c05592069a83f2795763a9B154C1226b283",
+      "deploymentTx": "0x2567e498f2e168974fd3b9c7ae57b1b3ad202bc44e2f71fceab4a632bdee7cc5"
+    }
+  },
+  "tokenState": {
+    "totalSupply": "21000000.0",
+    "ownerPesBalance": "21000000.0",
+    "presalePesBalance": "0.0",
+    "liquidityWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "operationsWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8"
+  },
+  "saleConfig": {
+    "fundsWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "paymentPerPackage": "300.0",
+    "pesPerPackage": "3000.0",
+    "maxPackages": "2000",
+    "publicPackageCap": "2000",
+    "perWalletPackageLimit": "1",
+    "saleStart": "0",
+    "saleEnd": "0",
+    "launchTime": "0",
+    "vestingPeriodSeconds": "86400",
+    "vestingPeriods": "40",
+    "elapsedVestingPeriods": "0"
+  },
+  "deployerBnb": {
+    "before": "0.047637585450006895",
+    "after": "0.047357514220370637",
+    "spent": "0.000280071229636258"
+  },
+  "transactions": {
+    "deployPesProxy": "https://bscscan.com/tx/0x054aa5d83aab72b6a22ba8bb6a409ccca3581b24c11b8b1f5698c8bf378942cf",
+    "deployPresaleProxy": "https://bscscan.com/tx/0x2567e498f2e168974fd3b9c7ae57b1b3ad202bc44e2f71fceab4a632bdee7cc5"
+  }
+}

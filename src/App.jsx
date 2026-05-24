@@ -28,7 +28,9 @@ const CONFIG_KEY = "pes-token-console-config";
 const ADMIN_ALLOCATIONS_CACHE_KEY = "pes-admin-allocations-cache";
 const IP_POLICY_ENDPOINT = "/api/ip-policy";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
-const DEFAULT_BSC_TESTNET_RPC_URL = "https://bsc-testnet-rpc.publicnode.com";
+const TARGET_CHAIN_ID = "56";
+const TARGET_CHAIN_NAME = "BSC Mainnet";
+const DEFAULT_BSC_RPC_URL = "https://bsc-dataseed.bnbchain.org";
 const EVENT_LOOKBACK_BLOCKS = Number(import.meta.env.VITE_EVENT_LOOKBACK_BLOCKS || "20000");
 const ADMIN_ALLOCATION_SCAN_BLOCKS = Number(import.meta.env.VITE_ADMIN_ALLOCATION_SCAN_BLOCKS || "500000");
 const EVENT_QUERY_BLOCK_RANGE = Number(import.meta.env.VITE_EVENT_QUERY_BLOCK_RANGE || "50000");
@@ -46,9 +48,9 @@ const DEFAULT_IP_POLICY = {
   whitelist: [],
 };
 const DEFAULT_BSC_TESTNET_CONFIG = {
-  pesAddress: "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
-  presaleAddress: "0x6dAC9d59F92Ff09aC89F2AC7D33B905b534Ac6bc",
-  paymentTokenAddress: "0xacD944e910952c020eb129C50921f180c62c3291",
+  pesAddress: "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
+  presaleAddress: "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+  paymentTokenAddress: "0x55d398326f99059fF775485246999027B3197955",
 };
 const LEGACY_BSC_TESTNET_CONFIG = {
   presaleAddress: "0x5e353B9F99e5A8EF669Bc8399035c3408A370D66",
@@ -56,6 +58,10 @@ const LEGACY_BSC_TESTNET_CONFIG = {
 };
 const PREVIOUS_BSC_TESTNET_CONFIG = {
   presaleAddress: "0x55557090058345F9D758aD7Fb3b8bbB6Ed142f11",
+  paymentTokenAddress: "0xacD944e910952c020eb129C50921f180c62c3291",
+};
+const LATEST_BSC_TESTNET_CONFIG = {
+  presaleAddress: "0xBCB3abE6FbeAEe3deb24A06527295045f9D47b28",
   paymentTokenAddress: "0xacD944e910952c020eb129C50921f180c62c3291",
 };
 
@@ -80,6 +86,12 @@ function loadConfig() {
     if (
       normalizeAddress(config.presaleAddress) === normalizeAddress(PREVIOUS_BSC_TESTNET_CONFIG.presaleAddress) &&
       normalizeAddress(config.paymentTokenAddress) === normalizeAddress(PREVIOUS_BSC_TESTNET_CONFIG.paymentTokenAddress)
+    ) {
+      return { ...config, ...DEFAULT_BSC_TESTNET_CONFIG };
+    }
+    if (
+      normalizeAddress(config.presaleAddress) === normalizeAddress(LATEST_BSC_TESTNET_CONFIG.presaleAddress) &&
+      normalizeAddress(config.paymentTokenAddress) === normalizeAddress(LATEST_BSC_TESTNET_CONFIG.paymentTokenAddress)
     ) {
       return { ...config, ...DEFAULT_BSC_TESTNET_CONFIG };
     }
@@ -447,7 +459,7 @@ function RainbowWalletButton() {
         if (chain.unsupported) {
           return (
             <Button icon={AlertTriangle} variant="secondary" onClick={openChainModal}>
-              切换到 BSC Testnet
+              切换到 BSC Mainnet
             </Button>
           );
         }
@@ -660,7 +672,7 @@ function ClientPanel({
             </div>
             <h3>{formatUnits(data?.pesPerPackage || 0n)} PES / 份</h3>
             <p className="clientLead">
-              每份支付 {paymentLabel}，上线后先释放 20%，剩余部分按 {vestingPeriodsLabel} 个周期释放，每周期 {vestingPeriodLabel}。
+              每份支付 {paymentLabel}，上线满 1 个周期先释放 20%，之后每个已过周期追加释放剩余 80% / {vestingPeriodsLabel}，每周期 {vestingPeriodLabel}。
             </p>
             <div className="clientHeroActions">
               <a className="linkButton heroCta" href="#purchase-panel">
@@ -695,7 +707,7 @@ function ClientPanel({
               <img src="/pes-coin.svg" alt="" />
             </div>
             <div className="tokenVisualMeta">
-              <span>BSC TESTNET</span>
+              <span>BSC MAINNET</span>
               <strong>20% + {vestingPeriodsLabel} periods</strong>
               <small>Vesting Schedule</small>
             </div>
@@ -890,7 +902,7 @@ function AdminPanel({
 }) {
   const [saleForm, setSaleForm] = useState({ start: "", end: "" });
   const [launchForm, setLaunchForm] = useState("");
-  const [vestingForm, setVestingForm] = useState({ periodDays: "1", periods: "40" });
+  const [vestingForm, setVestingForm] = useState({ periodDays: "1", periods: "40", elapsedPeriods: "0" });
   const [packageForm, setPackageForm] = useState({
     paymentPerPackage: "300",
     pesPerPackage: "3000",
@@ -898,6 +910,7 @@ function AdminPanel({
     publicPackageCap: "2000",
     perWalletPackageLimit: "1",
   });
+  const [ownerTransfer, setOwnerTransfer] = useState({ pesOwner: "", presaleOwner: "" });
   const [fundsWallet, setFundsWallet] = useState("");
   const [feeWallets, setFeeWallets] = useState({ liquidityWallet: "", operationsWallet: "" });
   const [buyFees, setBuyFees] = useState({ liquidityBps: "50", operationsBps: "50", burnBps: "50" });
@@ -916,6 +929,7 @@ function AdminPanel({
     setVestingForm({
       periodDays: secondsToDays(data?.vestingPeriodSeconds || 86_400n),
       periods: String(data?.vestingPeriods || 40n),
+      elapsedPeriods: String(data?.elapsedVestingPeriods || 0n),
     });
     setPackageForm({
       paymentPerPackage: formatUnits(data?.paymentPerPackage || 0n, payment?.decimals || 18, 2).replace(/,/g, ""),
@@ -945,10 +959,12 @@ function AdminPanel({
     }
   }, [data, token, payment?.decimals]);
 
-  const isOwner =
-    account &&
-    ((data?.owner && normalizeAddress(data.owner) === normalizeAddress(account)) ||
-      (token?.owner && normalizeAddress(token.owner) === normalizeAddress(account)));
+  const accountAddress = normalizeAddress(account);
+  const presaleOwnerAddress = normalizeAddress(data?.owner);
+  const tokenOwnerAddress = normalizeAddress(token?.owner);
+  const isPresaleOwner = Boolean(accountAddress && presaleOwnerAddress && presaleOwnerAddress === accountAddress);
+  const isTokenOwner = Boolean(accountAddress && tokenOwnerAddress && tokenOwnerAddress === accountAddress);
+  const isOwner = isPresaleOwner || isTokenOwner;
   const adminPublicSold = data?.publicPackagesSold || 0n;
   const adminTotalAllocated = data?.totalPackagesAllocated || 0n;
   const adminOwnerAllocated = adminTotalAllocated > adminPublicSold ? adminTotalAllocated - adminPublicSold : 0n;
@@ -1030,6 +1046,67 @@ function AdminPanel({
 
       <div className="adminGrid">
         <div className="surfacePanel">
+          <h3>Owner Transfer</h3>
+          <div className="formGrid two">
+            <Field label="New PES Owner">
+              <input
+                value={ownerTransfer.pesOwner}
+                onChange={(event) => setOwnerTransfer({ ...ownerTransfer, pesOwner: event.target.value })}
+                placeholder={token?.owner || "0x..."}
+              />
+            </Field>
+            <Field label="New Presale Owner">
+              <input
+                value={ownerTransfer.presaleOwner}
+                onChange={(event) => setOwnerTransfer({ ...ownerTransfer, presaleOwner: event.target.value })}
+                placeholder={data?.owner || "0x..."}
+              />
+            </Field>
+          </div>
+          <div className="buttonRow">
+            <Button
+              icon={ShieldCheck}
+              variant="secondary"
+              busy={busy === "transferPesOwner"}
+              disabled={
+                !isTokenOwner ||
+                !isAddress(ownerTransfer.pesOwner) ||
+                normalizeAddress(ownerTransfer.pesOwner) === tokenOwnerAddress
+              }
+              onClick={() => {
+                if (!window.confirm("Transfer PES owner? The current wallet will lose PES owner permissions.")) return;
+                runTransaction("Transfer PES Owner", "transferPesOwner", async ({ pes }) =>
+                  pes.transferOwnership(ownerTransfer.pesOwner)
+                );
+              }}
+            >
+              Transfer PES Owner
+            </Button>
+            <Button
+              icon={ShieldCheck}
+              variant="secondary"
+              busy={busy === "transferPresaleOwner"}
+              disabled={
+                !isPresaleOwner ||
+                !isAddress(ownerTransfer.presaleOwner) ||
+                normalizeAddress(ownerTransfer.presaleOwner) === presaleOwnerAddress
+              }
+              onClick={() => {
+                if (!window.confirm("Transfer Presale owner? The current wallet will lose Presale owner permissions.")) return;
+                runTransaction("Transfer Presale Owner", "transferPresaleOwner", async ({ presale }) =>
+                  presale.transferOwnership(ownerTransfer.presaleOwner)
+                );
+              }}
+            >
+              Transfer Presale Owner
+            </Button>
+          </div>
+          <div className="emptyState">
+            Current PES Owner: {shortAddress(token?.owner)} / Current Presale Owner: {shortAddress(data?.owner)}
+          </div>
+        </div>
+
+        <div className="surfacePanel">
           <h3>私募参数</h3>
           <div className="formGrid two">
             <Field label="认购开始时间">
@@ -1090,6 +1167,15 @@ function AdminPanel({
                 onChange={(event) => setVestingForm({ ...vestingForm, periods: event.target.value })}
               />
             </Field>
+            <Field label={"\u5df2\u8fc7\u5468\u671f\u6570"}>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={vestingForm.elapsedPeriods}
+                onChange={(event) => setVestingForm({ ...vestingForm, elapsedPeriods: event.target.value })}
+              />
+            </Field>
           </div>
           <Button
             icon={SlidersHorizontal}
@@ -1098,12 +1184,23 @@ function AdminPanel({
             disabled={!isOwner || !data?.vestingConfigSupported}
             onClick={() =>
               runTransaction("设置释放周期", "setVestingConfig", async ({ presale }) =>
-                presale.setVestingConfig(daysToSeconds(vestingForm.periodDays), Number(vestingForm.periods || "0"))
+                data?.vestingProgressSupported
+                  ? presale.setVestingConfigAndProgress(
+                      daysToSeconds(vestingForm.periodDays),
+                      Number(vestingForm.periods || "0"),
+                      Number(vestingForm.elapsedPeriods || "0")
+                    )
+                  : presale.setVestingConfig(daysToSeconds(vestingForm.periodDays), Number(vestingForm.periods || "0"))
               )
             }
           >
             保存释放周期
           </Button>
+          {!data?.vestingProgressSupported ? (
+            <div className="emptyState">
+              {"\u5f53\u524d\u79c1\u52df\u5408\u7ea6\u4e0d\u652f\u6301\u5df2\u8fc7\u5468\u671f\u6570\u914d\u7f6e\uff1b\u65b0\u5408\u7ea6\u90e8\u7f72\u540e\u53ef\u52a8\u6001\u8c03\u6574\u5df2\u91ca\u653e\u6570\u91cf\u3002"}
+            </div>
+          ) : null}
           {!data?.vestingConfigSupported ? (
             <div className="emptyState">当前私募合约不支持释放周期设置；新合约部署后可在这里配置。</div>
           ) : null}
@@ -1641,10 +1738,10 @@ export default function App() {
   const pageLabel = isAdminRoute ? "PES Admin Console" : "PES Token Launchpad";
   const pageTitle = isAdminRoute ? "PES Admin 管理系统" : "PES 私募认购";
   const fallbackProvider = useMemo(
-    () => new ethers.JsonRpcProvider(import.meta.env.VITE_READ_RPC_URL || DEFAULT_BSC_TESTNET_RPC_URL),
+    () => new ethers.JsonRpcProvider(import.meta.env.VITE_READ_RPC_URL || DEFAULT_BSC_RPC_URL),
     []
   );
-  const readProvider = chainId && chainId !== "97" ? fallbackProvider : provider || fallbackProvider;
+  const readProvider = chainId && chainId !== TARGET_CHAIN_ID ? fallbackProvider : provider || fallbackProvider;
 
   const navigate = useCallback((nextPath) => {
     window.history.pushState({}, "", nextPath);
@@ -1741,6 +1838,7 @@ export default function App() {
           presale.launchTime(),
           optionalContractCall(() => presale.vestingPeriodSeconds(), 86_400n),
           optionalContractCall(() => presale.vestingPeriods(), 40n),
+          optionalContractCall(() => presale.elapsedVestingPeriods(), 0n),
           presale.publicPackagesSold(),
           presale.totalPackagesAllocated(),
           presale.totalTokensAllocated(),
@@ -1781,6 +1879,7 @@ export default function App() {
         launchTime,
         vestingPeriodSecondsResult,
         vestingPeriodsResult,
+        elapsedVestingPeriodsResult,
         publicPackagesSold,
         totalPackagesAllocated,
         totalTokensAllocated,
@@ -1827,7 +1926,9 @@ export default function App() {
         launchTime,
         vestingPeriodSeconds: vestingPeriodSecondsResult.value,
         vestingPeriods: vestingPeriodsResult.value,
+        elapsedVestingPeriods: elapsedVestingPeriodsResult.value,
         vestingConfigSupported: vestingPeriodSecondsResult.supported && vestingPeriodsResult.supported,
+        vestingProgressSupported: elapsedVestingPeriodsResult.supported,
         publicPackagesSold,
         totalPackagesAllocated,
         totalTokensAllocated,
@@ -1998,8 +2099,8 @@ export default function App() {
         setNotice({ type: "error", message: "请先连接钱包" });
         return;
       }
-      if (chainId !== "97") {
-        setNotice({ type: "error", message: "请先在 RainbowKit 中切换到 BSC Testnet" });
+      if (chainId !== TARGET_CHAIN_ID) {
+        setNotice({ type: "error", message: `请先在 RainbowKit 中切换到 ${TARGET_CHAIN_NAME}` });
         return;
       }
       if (!isAddress(config.pesAddress) || !isAddress(config.presaleAddress)) {

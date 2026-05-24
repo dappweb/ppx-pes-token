@@ -72,7 +72,7 @@ async function main() {
   const now = BigInt(latestBlock.timestamp);
   const saleStart = now - 300n;
   const saleEnd = now + (7n * ONE_DAY);
-  const launchTime = now - 1n;
+  const launchTime = now - ONE_DAY;
 
   const paymentPerPackage = hre.ethers.parseUnits("300", 18);
   const pesPerPackage = hre.ethers.parseUnits("3000", 18);
@@ -139,12 +139,18 @@ async function main() {
   assert.equal(allocation.packages, 1n);
   assert.equal(allocation.tokens, pesPerPackage);
 
+  await waitForTx(
+    presale.contract.setElapsedVestingPeriods(1),
+    "Set elapsed vesting periods for initial claim smoke test",
+    confirmations
+  );
+
   const expectedInitialClaim = (pesPerPackage * 2000n) / BPS_DENOMINATOR;
   assert.equal(await presale.contract.claimableAmount(buyer.address), expectedInitialClaim);
 
   const claimTx = await waitForTx(
     presale.contract.connect(buyer).claim(),
-    "Buyer claim initial release",
+    "Buyer claim first-day release",
     confirmations
   );
   assert.equal(await pes.contract.balanceOf(buyer.address), expectedInitialClaim);

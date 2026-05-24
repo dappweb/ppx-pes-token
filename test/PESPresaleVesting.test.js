@@ -111,61 +111,66 @@ describe("PESPresaleVesting", function () {
     );
   });
 
-  it("vests 20% at launch and 2% per day for 40 days", async function () {
+  it("vests from the configured elapsed period count", async function () {
     const { presale, pesToken, buyer } = await deployFixture();
 
     await presale.connect(buyer).purchasePackages(1);
 
     await expect(presale.connect(buyer).claim()).to.be.revertedWithCustomError(presale, "NoTokensClaimable");
 
-    const launchTime = (await time.latest()) + 100;
-    await presale.setLaunchTime(launchTime);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(0);
+    await expect(presale.connect(buyer).claim()).to.be.revertedWithCustomError(presale, "NoTokensClaimable");
 
-    await time.increaseTo(launchTime);
+    await expect(presale.setElapsedVestingPeriods(1))
+      .to.emit(presale, "ElapsedVestingPeriodsUpdated")
+      .withArgs(1);
     expect(await presale.claimableAmount(buyer.address)).to.equal(pes("600"));
 
     await presale.connect(buyer).claim();
     expect(await pesToken.balanceOf(buyer.address)).to.equal(pes("600"));
 
-    await time.increaseTo(launchTime + DAY);
+    await presale.setElapsedVestingPeriods(2);
     expect(await presale.claimableAmount(buyer.address)).to.equal(pes("60"));
 
     await presale.connect(buyer).claim();
     expect(await pesToken.balanceOf(buyer.address)).to.equal(pes("660"));
 
-    await time.increaseTo(launchTime + 40 * DAY);
-    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("2340"));
+    await presale.setElapsedVestingPeriods(40);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("2280"));
+
+    await presale.connect(buyer).claim();
+    expect(await pesToken.balanceOf(buyer.address)).to.equal(pes("2940"));
+
+    await presale.setElapsedVestingPeriods(41);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("60"));
 
     await presale.connect(buyer).claim();
     expect(await pesToken.balanceOf(buyer.address)).to.equal(pes("3000"));
     expect(await presale.claimableAmount(buyer.address)).to.equal(0);
   });
 
-  it("lets the owner configure vesting period time and period count before launch", async function () {
+  it("lets the owner configure vesting period time, period count, and elapsed periods", async function () {
     const { presale, buyer } = await deployFixture();
 
     await presale.connect(buyer).purchasePackages(1);
 
-    await expect(presale.setVestingConfig(12 * 60 * 60, 8))
+    await expect(presale.setVestingConfigAndProgress(12 * 60 * 60, 8, 0))
       .to.emit(presale, "VestingConfigUpdated")
       .withArgs(12 * 60 * 60, 8);
 
-    const launchTime = (await time.latest()) + 100;
-    await presale.setLaunchTime(launchTime);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(0);
 
-    await time.increaseTo(launchTime);
+    await presale.setElapsedVestingPeriods(1);
     expect(await presale.claimableAmount(buyer.address)).to.equal(pes("600"));
 
-    await time.increaseTo(launchTime + 12 * 60 * 60);
+    await presale.setElapsedVestingPeriods(2);
     expect(await presale.claimableAmount(buyer.address)).to.equal(pes("900"));
 
-    await time.increaseTo(launchTime + 8 * 12 * 60 * 60);
-    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("3000"));
+    await presale.setElapsedVestingPeriods(8);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("2700"));
 
-    await expect(presale.setVestingConfig(DAY, 40)).to.be.revertedWithCustomError(
-      presale,
-      "LaunchAlreadyStarted"
-    );
+    await presale.setElapsedVestingPeriods(9);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("3000"));
   });
 
   it("protects already allocated PES from owner recovery", async function () {

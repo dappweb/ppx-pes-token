@@ -1,0 +1,70 @@
+{
+  "runAt": "2026-05-23T16:27:58.665Z",
+  "network": "bscTestnet",
+  "chainId": "97",
+  "deployer": "0x744447d8580EB900b199e852C132F626247a36F7",
+  "oldPresale": "0x9DBAB0Ea0E5949740cc2098836939D314b159aE1",
+  "oldPaused": true,
+  "contracts": {
+    "pesToken": {
+      "address": "0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0",
+      "explorer": "https://testnet.bscscan.com/address/0x40F7D13eC974e4eE0DA0Ca4E5ce49719C41324b0"
+    },
+    "paymentToken": {
+      "address": "0xacD944e910952c020eb129C50921f180c62c3291",
+      "symbol": "USDx5",
+      "decimals": "18",
+      "explorer": "https://testnet.bscscan.com/address/0xacD944e910952c020eb129C50921f180c62c3291"
+    },
+    "presaleVesting": {
+      "address": "0xBCB3abE6FbeAEe3deb24A06527295045f9D47b28",
+      "explorer": "https://testnet.bscscan.com/address/0xBCB3abE6FbeAEe3deb24A06527295045f9D47b28",
+      "deploymentTx": "0xa993410e18e814978548282b7d63f828b19613ab9167e70c18346e0c45f04345"
+    }
+  },
+  "saleConfig": {
+    "paymentPerPackage": "300.0",
+    "pesPerPackage": "3000.0",
+    "maxPackages": "1000",
+    "publicPackageCap": "1000",
+    "perWalletPackageLimit": "1",
+    "saleStart": "1778239680",
+    "saleEnd": "1780227180",
+    "launchTime": "0",
+    "vestingPeriodSeconds": "86400",
+    "vestingPeriods": "40",
+    "elapsedVestingPeriods": "2"
+  },
+  "migratedAllocations": [
+    {
+      "account": "0x744447d8580EB900b199e852C132F626247a36F7",
+      "packages": "1",
+      "tokens": "3000.0",
+      "claimed": "0.0",
+      "vested": "660.0",
+      "claimable": "660.0"
+    },
+    {
+      "account": "0x27384dEd12497e75e2294859375E6bD3311deB1e",
+      "packages": "1",
+      "tokens": "3000.0",
+      "claimed": "0.0",
+      "vested": "660.0",
+      "claimable": "660.0"
+    }
+  ],
+  "postRunChainState": {
+    "newPresalePESBalance": "5994000.0",
+    "newTotalPackagesAllocated": "2",
+    "newTotalTokensAllocated": "6000.0"
+  },
+  "transactions": {
+    "deployPresale": "https://testnet.bscscan.com/tx/0xa993410e18e814978548282b7d63f828b19613ab9167e70c18346e0c45f04345",
+    "recoverOldExcessPes": "https://testnet.bscscan.com/tx/0xb659c10509d046ddbc88da691a084b0096bc008d0a46f9bd2666192e8f529478",
+    "grant_0x744447d8580EB900b199e852C132F626247a36F7": "https://testnet.bscscan.com/tx/0xbc575b9789f5db897a0e0c3e87be597bd98d9576af249eb68deea4d738a949b8",
+    "grant_0x27384dEd12497e75e2294859375E6bD3311deB1e": "https://testnet.bscscan.com/tx/0x1fb9605ec4d2e34ea3c005d784a6ad432ef8594c3a09b5bacbc30f21028b6d32",
+    "setVestingProgressInitial": "https://testnet.bscscan.com/tx/0xa43c626edde094df34efa82a9adf7949c1a4a096565acdac0fa2c9a8684cbdf4",
+    "setVestingProgress": "https://testnet.bscscan.com/tx/0x423081a51df7607893b78cbe34b8df447991b0f21a56aa9be34404c0b6c90a27",
+    "pauseOldPresale": "https://testnet.bscscan.com/tx/0x88a310592deb6faee1ede53fa721dd1d36088e46748fd4da2603fc0cc8baa1b3"
+  }
+}

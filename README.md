@@ -6,7 +6,7 @@ This repository contains the on-chain implementation for the PES token launch:
 - buy/sell fee routing for LP, operations, and burn
 - USDT presale package purchase
 - transparent admin allocations for strategic/ecosystem packages
-- vesting claim schedule: 20% at launch, then 2% per day for 40 days
+- vesting claim schedule: 20% after the first elapsed period, then the remaining 80% linearly by configured period count
 
 ## Business Parameters
 
@@ -22,9 +22,9 @@ This repository contains the on-chain implementation for the PES token launch:
 | Total packages | 2,000 |
 | Public remaining counter | 2,000 total packages minus all purchased and owner-issued packages |
 | Owner-issued strategic/ecosystem target | 1,950 packages |
-| Initial release | 20% at launch |
-| Linear release | 2% per day |
-| Vesting duration | 40 days |
+| Initial release | 20% after the first elapsed period |
+| Linear release | Remaining 80% / configured period count |
+| Default vesting duration | 41 days |
 | Buy fee | 1.5% |
 | Sell fee | 1.5% |
 | Default fee split | 0.5% LP, 0.5% operations, 0.5% burn |
@@ -45,7 +45,7 @@ This repository contains the on-chain implementation for the PES token launch:
 - transfers payment directly to the configured funds wallet
 - records user allocations instead of transferring all PES immediately
 - supports owner-granted transparent strategic/ecosystem allocations
-- calculates claimable PES from the configured launch time
+- calculates claimable PES from the owner-configured elapsed vesting period count
 - protects allocated PES from accidental owner recovery
 
 ## Setup
@@ -167,7 +167,7 @@ Wallet connection uses RainbowKit and Wagmi. Set `VITE_WALLETCONNECT_PROJECT_ID`
 5. Open public purchase during `SALE_START` to `SALE_END`.
 6. Add initial PES/USDT liquidity using the planned LP allocation.
 7. Set the DEX pair and enable trading with `npm run enable:trading`.
-8. Users claim vested PES from launch time onward.
+8. Owner/Admin updates the elapsed vesting period count as release periods pass; users claim vested PES from that configured progress.
 
 ## Notes
 

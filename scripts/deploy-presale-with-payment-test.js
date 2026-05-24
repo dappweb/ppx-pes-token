@@ -77,7 +77,7 @@ async function main() {
   const now = BigInt(latestBlock.timestamp);
   const saleStart = BigInt(envUint("SALE_START", (now - 300n).toString()));
   const saleEnd = BigInt(envUint("SALE_END", (now + (7n * ONE_DAY)).toString()));
-  const launchTime = BigInt(envUint("LAUNCH_TIME", (now - 1n).toString()));
+  const launchTime = BigInt(envUint("LAUNCH_TIME", (now - ONE_DAY).toString()));
 
   console.log(`Network: bscTestnet (${network.chainId})`);
   console.log(`Deployer: ${deployer.address}`);
@@ -146,12 +146,18 @@ async function main() {
   assert.equal(allocation.tokens, pesPerPackage);
   assert.equal(await paymentToken.balanceOf(buyer.address), 0n);
 
+  await waitForTx(
+    presale.setElapsedVestingPeriods(1),
+    "Set elapsed vesting periods for initial claim smoke test",
+    confirmations
+  );
+
   const expectedInitialClaim = (pesPerPackage * 2000n) / BPS_DENOMINATOR;
   assert.equal(await presale.claimableAmount(buyer.address), expectedInitialClaim);
 
   const claimHash = await waitForTx(
     presale.connect(buyer).claim(),
-    "Buyer claim initial release",
+    "Buyer claim first-day release",
     confirmations
   );
   assert.equal(await pes.balanceOf(buyer.address), expectedInitialClaim);

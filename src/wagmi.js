@@ -1,17 +1,17 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { http } from "wagmi";
-import { bscTestnet } from "wagmi/chains";
+import { bsc } from "wagmi/chains";
 
-const readRpcUrl = import.meta.env.VITE_READ_RPC_URL || "https://bsc-testnet-rpc.publicnode.com";
+const readRpcUrl = import.meta.env.VITE_READ_RPC_URL || "https://bsc-dataseed.bnbchain.org";
 const walletConnectProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || "PES_TESTNET_PROJECT_ID";
 
 export const wagmiConfig = getDefaultConfig({
   appName: "PES Presale",
   projectId: walletConnectProjectId,
-  chains: [bscTestnet],
+  chains: [bsc],
   transports: {
-    [bscTestnet.id]: http(readRpcUrl),
+    [bsc.id]: http(readRpcUrl),
   },
 });
 
-export { bscTestnet };
+export { bsc };

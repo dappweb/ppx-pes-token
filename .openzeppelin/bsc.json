@@ -1,0 +1,609 @@
+{
+  "manifestVersion": "3.2",
+  "proxies": [
+    {
+      "address": "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
+      "txHash": "0x054aa5d83aab72b6a22ba8bb6a409ccca3581b24c11b8b1f5698c8bf378942cf",
+      "kind": "uups"
+    },
+    {
+      "address": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+      "txHash": "0x2567e498f2e168974fd3b9c7ae57b1b3ad202bc44e2f71fceab4a632bdee7cc5",
+      "kind": "uups"
+    }
+  ],
+  "impls": {
+    "b18d4a58bd1a1e746f4c9fd43b5139f07dfb6a57b6387d97665583c12213ea76": {
+      "address": "0x7909b4c672059D00765c0963A3ba4f2219E90B82",
+      "txHash": "0xf56935c7a38aa5c0c3db19f78f46f5aa3a4f4ae7928e68f322c36a362bef83e3",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "buyFees",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_struct(FeeRates)2770_storage",
+            "contract": "PESTokenUpgradeable",
+            "src": "contracts\\PESTokenUpgradeable.sol:21"
+          },
+          {
+            "label": "sellFees",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_struct(FeeRates)2770_storage",
+            "contract": "PESTokenUpgradeable",
+            "src": "contracts\\PESTokenUpgradeable.sol:22"
+          },
+          {
+            "label": "liquidityWallet",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_address",
+            "contract": "PESTokenUpgradeable",
+            "src": "contracts\\PESTokenUpgradeable.sol:24"
+          },
+          {
+            "label": "operationsWallet",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "PESTokenUpgradeable",
+            "src": "contracts\\PESTokenUpgradeable.sol:25"
+          },
+          {
+            "label": "tradingEnabled",
+            "offset": 20,
+            "slot": "3",
+            "type": "t_bool",
+            "contract": "PESTokenUpgradeable",
+            "src": "contracts\\PESTokenUpgradeable.sol:26"
+          },
+          {
+            "label": "automatedMarketMakerPairs",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "PESTokenUpgradeable",
+            "src": "contracts\\PESTokenUpgradeable.sol:28"
+          },
+          {
+            "label": "isExcludedFromFees",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_mapping(t_address,t_bool)",
+            "contract": "PESTokenUpgradeable",
+            "src": "contracts\\PESTokenUpgradeable.sol:29"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_mapping(t_address,t_mapping(t_address,t_uint256))": {
+            "label": "mapping(address => mapping(address => uint256))",
+            "numberOfBytes": "32"
+          },
+          "t_mapping(t_address,t_uint256)": {
+            "label": "mapping(address => uint256)",
+            "numberOfBytes": "32"
+          },
+          "t_string_storage": {
+            "label": "string",
+            "numberOfBytes": "32"
+          },
+          "t_struct(ERC20Storage)113_storage": {
+            "label": "struct ERC20Upgradeable.ERC20Storage",
+            "members": [
+              {
+                "label": "_balances",
+                "type": "t_mapping(t_address,t_uint256)",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_allowances",
+                "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "_totalSupply",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              },
+              {
+                "label": "_name",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "3"
+              },
+              {
+                "label": "_symbol",
+                "type": "t_string_storage",
+                "offset": 0,
+                "slot": "4"
+              }
+            ],
+            "numberOfBytes": "160"
+          },
+          "t_struct(InitializableStorage)526_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)308_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_mapping(t_address,t_bool)": {
+            "label": "mapping(address => bool)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(FeeRates)2770_storage": {
+            "label": "struct PESTokenUpgradeable.FeeRates",
+            "members": [
+              {
+                "label": "liquidityBps",
+                "type": "t_uint16",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "operationsBps",
+                "type": "t_uint16",
+                "offset": 2,
+                "slot": "0"
+              },
+              {
+                "label": "burnBps",
+                "type": "t_uint16",
+                "offset": 4,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.ERC20": [
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_balances",
+              "type": "t_mapping(t_address,t_uint256)",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:33",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_allowances",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_uint256))",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:35",
+              "offset": 0,
+              "slot": "1"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_totalSupply",
+              "type": "t_uint256",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:37",
+              "offset": 0,
+              "slot": "2"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_name",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:39",
+              "offset": 0,
+              "slot": "3"
+            },
+            {
+              "contract": "ERC20Upgradeable",
+              "label": "_symbol",
+              "type": "t_string_storage",
+              "src": "@openzeppelin\\contracts-upgradeable\\token\\ERC20\\ERC20Upgradeable.sol:40",
+              "offset": 0,
+              "slot": "4"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    },
+    "4dc0ca5ea7ae73b206ffb19d9a30c365221292498895641e2cd9a33031129e32": {
+      "address": "0x5cc66c05592069a83f2795763a9B154C1226b283",
+      "txHash": "0x65f5afeb24a26252d490a200432cb228fc3c555243f96f4f515c0cfd4e5eefc3",
+      "layout": {
+        "solcVersion": "0.8.24",
+        "storage": [
+          {
+            "label": "pesToken",
+            "offset": 0,
+            "slot": "0",
+            "type": "t_contract(IERC20)2762",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:24"
+          },
+          {
+            "label": "paymentToken",
+            "offset": 0,
+            "slot": "1",
+            "type": "t_contract(IERC20)2762",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:25"
+          },
+          {
+            "label": "_reentrancyStatus",
+            "offset": 0,
+            "slot": "2",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:26"
+          },
+          {
+            "label": "fundsWallet",
+            "offset": 0,
+            "slot": "3",
+            "type": "t_address",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:28"
+          },
+          {
+            "label": "paymentPerPackage",
+            "offset": 0,
+            "slot": "4",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:29"
+          },
+          {
+            "label": "pesPerPackage",
+            "offset": 0,
+            "slot": "5",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:30"
+          },
+          {
+            "label": "maxPackages",
+            "offset": 0,
+            "slot": "6",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:31"
+          },
+          {
+            "label": "publicPackageCap",
+            "offset": 0,
+            "slot": "7",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:32"
+          },
+          {
+            "label": "perWalletPackageLimit",
+            "offset": 0,
+            "slot": "8",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:33"
+          },
+          {
+            "label": "saleStart",
+            "offset": 0,
+            "slot": "9",
+            "type": "t_uint64",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:34"
+          },
+          {
+            "label": "saleEnd",
+            "offset": 8,
+            "slot": "9",
+            "type": "t_uint64",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:35"
+          },
+          {
+            "label": "launchTime",
+            "offset": 16,
+            "slot": "9",
+            "type": "t_uint64",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:36"
+          },
+          {
+            "label": "vestingPeriodSeconds",
+            "offset": 24,
+            "slot": "9",
+            "type": "t_uint64",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:37"
+          },
+          {
+            "label": "vestingPeriods",
+            "offset": 0,
+            "slot": "10",
+            "type": "t_uint16",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:38"
+          },
+          {
+            "label": "elapsedVestingPeriods",
+            "offset": 2,
+            "slot": "10",
+            "type": "t_uint16",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:39"
+          },
+          {
+            "label": "publicPackagesSold",
+            "offset": 0,
+            "slot": "11",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:41"
+          },
+          {
+            "label": "totalPackagesAllocated",
+            "offset": 0,
+            "slot": "12",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:42"
+          },
+          {
+            "label": "totalTokensAllocated",
+            "offset": 0,
+            "slot": "13",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:43"
+          },
+          {
+            "label": "totalTokensClaimed",
+            "offset": 0,
+            "slot": "14",
+            "type": "t_uint256",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:44"
+          },
+          {
+            "label": "allocations",
+            "offset": 0,
+            "slot": "15",
+            "type": "t_mapping(t_address,t_struct(Allocation)5371_storage)",
+            "contract": "PESPresaleVestingUpgradeable",
+            "src": "contracts\\PESPresaleVestingUpgradeable.sol:67"
+          }
+        ],
+        "types": {
+          "t_address": {
+            "label": "address",
+            "numberOfBytes": "20"
+          },
+          "t_bool": {
+            "label": "bool",
+            "numberOfBytes": "1"
+          },
+          "t_struct(InitializableStorage)649_storage": {
+            "label": "struct Initializable.InitializableStorage",
+            "members": [
+              {
+                "label": "_initialized",
+                "type": "t_uint64",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "_initializing",
+                "type": "t_bool",
+                "offset": 8,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(OwnableStorage)13_storage": {
+            "label": "struct OwnableUpgradeable.OwnableStorage",
+            "members": [
+              {
+                "label": "_owner",
+                "type": "t_address",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_struct(PausableStorage)308_storage": {
+            "label": "struct PausableUpgradeable.PausableStorage",
+            "members": [
+              {
+                "label": "_paused",
+                "type": "t_bool",
+                "offset": 0,
+                "slot": "0"
+              }
+            ],
+            "numberOfBytes": "32"
+          },
+          "t_uint64": {
+            "label": "uint64",
+            "numberOfBytes": "8"
+          },
+          "t_contract(IERC20)2762": {
+            "label": "contract IERC20",
+            "numberOfBytes": "20"
+          },
+          "t_mapping(t_address,t_struct(Allocation)5371_storage)": {
+            "label": "mapping(address => struct PESPresaleVestingUpgradeable.Allocation)",
+            "numberOfBytes": "32"
+          },
+          "t_struct(Allocation)5371_storage": {
+            "label": "struct PESPresaleVestingUpgradeable.Allocation",
+            "members": [
+              {
+                "label": "packages",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "0"
+              },
+              {
+                "label": "tokens",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "1"
+              },
+              {
+                "label": "claimed",
+                "type": "t_uint256",
+                "offset": 0,
+                "slot": "2"
+              }
+            ],
+            "numberOfBytes": "96"
+          },
+          "t_uint16": {
+            "label": "uint16",
+            "numberOfBytes": "2"
+          },
+          "t_uint256": {
+            "label": "uint256",
+            "numberOfBytes": "32"
+          }
+        },
+        "namespaces": {
+          "erc7201:openzeppelin.storage.Pausable": [
+            {
+              "contract": "PausableUpgradeable",
+              "label": "_paused",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts-upgradeable\\utils\\PausableUpgradeable.sol:21",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Ownable": [
+            {
+              "contract": "OwnableUpgradeable",
+              "label": "_owner",
+              "type": "t_address",
+              "src": "@openzeppelin\\contracts-upgradeable\\access\\OwnableUpgradeable.sol:24",
+              "offset": 0,
+              "slot": "0"
+            }
+          ],
+          "erc7201:openzeppelin.storage.Initializable": [
+            {
+              "contract": "Initializable",
+              "label": "_initialized",
+              "type": "t_uint64",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:69",
+              "offset": 0,
+              "slot": "0"
+            },
+            {
+              "contract": "Initializable",
+              "label": "_initializing",
+              "type": "t_bool",
+              "src": "@openzeppelin\\contracts\\proxy\\utils\\Initializable.sol:73",
+              "offset": 8,
+              "slot": "0"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

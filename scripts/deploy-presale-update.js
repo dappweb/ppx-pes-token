@@ -158,9 +158,10 @@ async function main() {
     confirmations
   );
 
-  const [vestingPeriodSeconds, vestingPeriods, fundedBalance] = await Promise.all([
+  const [vestingPeriodSeconds, vestingPeriods, elapsedVestingPeriods, fundedBalance] = await Promise.all([
     presale.vestingPeriodSeconds(),
     presale.vestingPeriods(),
+    presale.elapsedVestingPeriods(),
     pes.balanceOf(presaleAddress),
   ]);
 
@@ -198,6 +199,7 @@ async function main() {
       launchTime: launchTime.toString(),
       vestingPeriodSeconds: vestingPeriodSeconds.toString(),
       vestingPeriods: vestingPeriods.toString(),
+      elapsedVestingPeriods: elapsedVestingPeriods.toString(),
     },
     oldState: oldConfig
       ? {

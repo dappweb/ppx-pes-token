@@ -27,6 +27,7 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
     uint64 public launchTime;
     uint64 public vestingPeriodSeconds = 1 days;
     uint16 public vestingPeriods = 40;
+    uint16 public elapsedVestingPeriods;
 
     uint256 public publicPackagesSold;
     uint256 public totalPackagesAllocated;
@@ -47,6 +48,7 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
     event SaleWindowUpdated(uint64 saleStart, uint64 saleEnd);
     event LaunchTimeUpdated(uint64 launchTime);
     event VestingConfigUpdated(uint64 vestingPeriodSeconds, uint16 vestingPeriods);
+    event ElapsedVestingPeriodsUpdated(uint16 elapsedVestingPeriods);
     event FundsWalletUpdated(address indexed fundsWallet);
     event PackageConfigUpdated(
         uint256 paymentPerPackage,
@@ -122,11 +124,20 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
     }
 
     function setVestingConfig(uint64 newVestingPeriodSeconds, uint16 newVestingPeriods) external onlyOwner {
-        if (launchTime != 0 && block.timestamp >= launchTime) {
-            revert LaunchAlreadyStarted();
-        }
-
         _setVestingConfig(newVestingPeriodSeconds, newVestingPeriods);
+    }
+
+    function setElapsedVestingPeriods(uint16 newElapsedVestingPeriods) external onlyOwner {
+        _setElapsedVestingPeriods(newElapsedVestingPeriods);
+    }
+
+    function setVestingConfigAndProgress(
+        uint64 newVestingPeriodSeconds,
+        uint16 newVestingPeriods,
+        uint16 newElapsedVestingPeriods
+    ) external onlyOwner {
+        _setVestingConfig(newVestingPeriodSeconds, newVestingPeriods);
+        _setElapsedVestingPeriods(newElapsedVestingPeriods);
     }
 
     function setFundsWallet(address newFundsWallet) external onlyOwner {
@@ -211,17 +222,21 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
 
     function vestedAmount(address account) public view returns (uint256) {
         Allocation memory allocation = allocations[account];
-        if (allocation.tokens == 0 || launchTime == 0 || block.timestamp < launchTime) {
+        if (allocation.tokens == 0) {
             return 0;
         }
 
-        uint256 elapsedPeriods = (block.timestamp - launchTime) / vestingPeriodSeconds;
-        if (elapsedPeriods >= vestingPeriods) {
+        uint256 elapsedPeriods = elapsedVestingPeriods;
+        if (elapsedPeriods == 0) {
+            return 0;
+        }
+
+        if (elapsedPeriods > vestingPeriods) {
             return allocation.tokens;
         }
 
         uint256 remainingBps = BPS_DENOMINATOR - INITIAL_RELEASE_BPS;
-        uint256 releaseBps = INITIAL_RELEASE_BPS + ((remainingBps * elapsedPeriods) / vestingPeriods);
+        uint256 releaseBps = INITIAL_RELEASE_BPS + ((remainingBps * (elapsedPeriods - 1)) / vestingPeriods);
         return (allocation.tokens * releaseBps) / BPS_DENOMINATOR;
     }
 
@@ -282,6 +297,11 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
         vestingPeriodSeconds = newVestingPeriodSeconds;
         vestingPeriods = newVestingPeriods;
         emit VestingConfigUpdated(newVestingPeriodSeconds, newVestingPeriods);
+    }
+
+    function _setElapsedVestingPeriods(uint16 newElapsedVestingPeriods) internal {
+        elapsedVestingPeriods = newElapsedVestingPeriods;
+        emit ElapsedVestingPeriodsUpdated(newElapsedVestingPeriods);
     }
 
     function _setPackageConfig(

@@ -31,6 +31,8 @@
   "homepage": "https://github.com/dappweb/ppx-pes-token#readme",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
+    "@openzeppelin/contracts-upgradeable": "^5.6.1",
+    "@openzeppelin/hardhat-upgrades": "^3.9.1",
     "@vitejs/plugin-react": "^5.1.2",
     "hardhat": "^2.28.6",
     "vite": "^7.2.7"
