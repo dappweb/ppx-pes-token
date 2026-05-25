@@ -43,7 +43,9 @@ describe("PESPresaleVesting", function () {
     );
     await presale.waitForDeployment();
 
-    await pesToken.transfer(await presale.getAddress(), pes("3000000"));
+    if (options.fundPresale ?? true) {
+      await pesToken.transfer(await presale.getAddress(), pes("3000000"));
+    }
     await paymentToken.mint(buyer.address, usdt("30000"));
     await paymentToken.mint(secondBuyer.address, usdt("30000"));
     await paymentToken.connect(buyer).approve(await presale.getAddress(), usdt("30000"));
@@ -149,6 +151,41 @@ describe("PESPresaleVesting", function () {
     expect(await presale.claimableAmount(buyer.address)).to.equal(0);
   });
 
+  it("allows public purchases before PES funding and lets claims succeed after funding", async function () {
+    const { presale, pesToken, paymentToken, fundsWallet, buyer } = await deployFixture({ fundPresale: false });
+
+    await expect(presale.connect(buyer).purchasePackages(1))
+      .to.emit(presale, "PackagesPurchased")
+      .withArgs(buyer.address, 1, usdt("300"), pes("3000"));
+
+    expect(await paymentToken.balanceOf(fundsWallet.address)).to.equal(usdt("300"));
+    expect(await presale.totalPackagesAllocated()).to.equal(1);
+
+    await presale.setElapsedVestingPeriods(1);
+    expect(await presale.claimableAmount(buyer.address)).to.equal(pes("600"));
+
+    await expect(presale.connect(buyer).claim()).to.be.revertedWithCustomError(
+      pesToken,
+      "ERC20InsufficientBalance"
+    );
+
+    await pesToken.transfer(await presale.getAddress(), pes("3000000"));
+    await presale.connect(buyer).claim();
+    expect(await pesToken.balanceOf(buyer.address)).to.equal(pes("600"));
+  });
+
+  it("allows owner allocations before PES funding", async function () {
+    const { presale, strategicAccount } = await deployFixture({ fundPresale: false });
+
+    await expect(presale.grantAllocation(strategicAccount.address, 1))
+      .to.emit(presale, "AdminAllocationGranted")
+      .withArgs(strategicAccount.address, 1, pes("3000"));
+
+    const allocation = await presale.allocations(strategicAccount.address);
+    expect(allocation.packages).to.equal(1);
+    expect(allocation.tokens).to.equal(pes("3000"));
+  });
+
   it("lets the owner configure vesting period time, period count, and elapsed periods", async function () {
     const { presale, buyer } = await deployFixture();
 
@@ -171,6 +208,29 @@ describe("PESPresaleVesting", function () {
 
     await presale.setElapsedVestingPeriods(9);
     expect(await presale.claimableAmount(buyer.address)).to.equal(pes("3000"));
+  });
+
+  it("prevents vesting progress from decreasing or exceeding the full-release period", async function () {
+    const { presale, buyer } = await deployFixture();
+
+    await presale.connect(buyer).purchasePackages(1);
+    await presale.setElapsedVestingPeriods(2);
+
+    await expect(presale.setElapsedVestingPeriods(1)).to.be.revertedWithCustomError(
+      presale,
+      "VestingProgressDecrease"
+    );
+
+    await expect(presale.setElapsedVestingPeriods(42)).to.be.revertedWithCustomError(
+      presale,
+      "VestingProgressTooHigh"
+    );
+
+    await presale.setElapsedVestingPeriods(3);
+    await expect(presale.setVestingConfig(DAY, 1)).to.be.revertedWithCustomError(
+      presale,
+      "VestingProgressTooHigh"
+    );
   });
 
   it("protects already allocated PES from owner recovery", async function () {

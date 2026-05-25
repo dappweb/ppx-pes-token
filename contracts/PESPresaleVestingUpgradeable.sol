@@ -92,6 +92,8 @@ contract PESPresaleVestingUpgradeable is
     error LaunchAlreadyStarted();
     error NoTokensClaimable();
     error ReservedTokenRecovery();
+    error VestingProgressDecrease();
+    error VestingProgressTooHigh();
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -330,12 +332,24 @@ contract PESPresaleVestingUpgradeable is
             revert InvalidAmount();
         }
 
+        if (elapsedVestingPeriods > uint256(newVestingPeriods) + 1) {
+            revert VestingProgressTooHigh();
+        }
+
         vestingPeriodSeconds = newVestingPeriodSeconds;
         vestingPeriods = newVestingPeriods;
         emit VestingConfigUpdated(newVestingPeriodSeconds, newVestingPeriods);
     }
 
     function _setElapsedVestingPeriods(uint16 newElapsedVestingPeriods) internal {
+        if (newElapsedVestingPeriods < elapsedVestingPeriods) {
+            revert VestingProgressDecrease();
+        }
+
+        if (newElapsedVestingPeriods > uint256(vestingPeriods) + 1) {
+            revert VestingProgressTooHigh();
+        }
+
         elapsedVestingPeriods = newElapsedVestingPeriods;
         emit ElapsedVestingPeriodsUpdated(newElapsedVestingPeriods);
     }
@@ -383,7 +397,6 @@ contract PESPresaleVestingUpgradeable is
         }
 
         tokenAmount = pesPerPackage * packages;
-
         Allocation storage allocation = allocations[account];
         allocation.packages += packages;
         allocation.tokens += tokenAmount;

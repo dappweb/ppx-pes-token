@@ -131,6 +131,16 @@ npm run simulate:admin-batch
 
 The simulation uses `eth_call` and `eth_estimateGas`, so it does not sign or change chain state. It mirrors the chunking flow used by the real grant script. Set `ALLOCATIONS_FILE=path/to/file.json` to simulate a specific batch file, `ALLOCATIONS_CHUNK_SIZE` or `SIM_CHUNK_SIZE` to choose chunk size, or `SIM_BATCH_SIZE` and `SIM_PACKAGES_PER_ADDRESS` to generate a temporary batch.
 
+Configure the current BSC mainnet presale schedule without sending transactions:
+
+```bash
+npm run configure:presale:schedule
+```
+
+The default schedule is Beijing time: sale opens `2026-05-26 00:00`, sale closes and launch time is set to `2026-05-28 15:00`, first release is planned for `2026-05-29 00:00`, and the remaining 80% releases across `40` daily periods. Per package, this is `600 PES` first, then `60 PES` per daily period until fully released at elapsed period `41`.
+
+To execute the owner-only mainnet updates, set `PRIVATE_KEY`, `BSC_RPC_URL`, and `EXECUTE=true` only in the current shell session, then run the same command. The script verifies chain ID `56` and rejects execution unless the signer is the presale owner. `ELAPSED_VESTING_PERIODS` can be set explicitly, otherwise the script computes the target period from `FIRST_RELEASE_TIME` and the latest block timestamp.
+
 `allocations.example.json` format:
 
 ```json

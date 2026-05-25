@@ -4,23 +4,18 @@ const hre = require("hardhat");
 
 const EXPLORER_BASE_URL = "https://bscscan.com";
 const DEFAULT_DEPLOYMENT_FILE = "deployments/bsc-mainnet-presale-config-2026-05-24.json";
-const FALLBACK_PES_ADDRESS = "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc";
 const FALLBACK_PRESALE_ADDRESS = "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd";
-
-const PES_ABI = [
-  "function owner() view returns (address)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function transfer(address to, uint256 amount) returns (bool)",
-];
 
 const PRESALE_ABI = [
   "function owner() view returns (address)",
   "function pesToken() view returns (address)",
-  "function pesPerPackage() view returns (uint256)",
+  "function paymentToken() view returns (address)",
   "function maxPackages() view returns (uint256)",
+  "function pesPerPackage() view returns (uint256)",
   "function totalTokensAllocated() view returns (uint256)",
   "function totalTokensClaimed() view returns (uint256)",
   "function unclaimedAllocatedTokens() view returns (uint256)",
+  "function upgradeToAndCall(address newImplementation, bytes data) payable",
 ];
 
 function env(name) {
@@ -77,52 +72,39 @@ async function main() {
   }
 
   const deployment = readDeployment();
-  const pesAddress = checkedAddress(
-    "PES_ADDRESS",
-    env("PES_ADDRESS") || addressFromDeployment(deployment, "pesToken", FALLBACK_PES_ADDRESS)
-  );
   const presaleAddress = checkedAddress(
     "PRESALE_ADDRESS",
     env("PRESALE_ADDRESS") || addressFromDeployment(deployment, "presaleVesting", FALLBACK_PRESALE_ADDRESS)
   );
 
-  const pes = await hre.ethers.getContractAt(PES_ABI, pesAddress);
-  const presale = await hre.ethers.getContractAt(PRESALE_ABI, presaleAddress);
+  const PresaleV2 = await hre.ethers.getContractFactory("PESPresaleVestingUpgradeable");
+  await hre.upgrades.validateUpgrade(presaleAddress, PresaleV2, { kind: "uups" });
 
+  const presale = await hre.ethers.getContractAt(PRESALE_ABI, presaleAddress);
   const [
-    tokenOwner,
-    presaleOwner,
-    presalePesToken,
-    pesPerPackage,
+    owner,
+    pesToken,
+    paymentToken,
     maxPackages,
+    pesPerPackage,
     totalTokensAllocated,
     totalTokensClaimed,
     unclaimedAllocatedTokens,
-    presalePesBalance,
+    currentImplementation,
   ] = await Promise.all([
-    pes.owner(),
     presale.owner(),
     presale.pesToken(),
-    presale.pesPerPackage(),
+    presale.paymentToken(),
     presale.maxPackages(),
+    presale.pesPerPackage(),
     presale.totalTokensAllocated(),
     presale.totalTokensClaimed(),
     presale.unclaimedAllocatedTokens(),
-    pes.balanceOf(presaleAddress),
+    hre.upgrades.erc1967.getImplementationAddress(presaleAddress),
   ]);
 
-  if (hre.ethers.getAddress(presalePesToken) !== pesAddress) {
-    throw new Error(`Presale pesToken ${presalePesToken} does not match PES ${pesAddress}`);
-  }
-
-  const requiredFunding = maxPackages * pesPerPackage;
-  const targetFunding = env("PRESALE_PES_AMOUNT")
-    ? hre.ethers.parseUnits(env("PRESALE_PES_AMOUNT"), 18)
-    : requiredFunding;
-  const shortfall = presalePesBalance >= targetFunding ? 0n : targetFunding - presalePesBalance;
-
   let signerAddress = null;
-  let ownerPesBalance = await pes.balanceOf(tokenOwner);
+  let newImplementation = null;
   let txHash = null;
 
   if (execute) {
@@ -132,62 +114,65 @@ async function main() {
     }
 
     signerAddress = signer.address;
-    if (hre.ethers.getAddress(signerAddress) !== hre.ethers.getAddress(tokenOwner)) {
-      throw new Error(`Signer ${signerAddress} is not PES owner ${tokenOwner}`);
+    if (hre.ethers.getAddress(signerAddress) !== hre.ethers.getAddress(owner)) {
+      throw new Error(`Signer ${signerAddress} is not presale owner ${owner}`);
     }
 
-    ownerPesBalance = await pes.balanceOf(signerAddress);
-    if (ownerPesBalance < shortfall) {
-      throw new Error(`Owner PES balance ${formatPes(ownerPesBalance)} is below shortfall ${formatPes(shortfall)}`);
-    }
-
-    if (shortfall > 0n) {
-      const tx = await pes.connect(signer).transfer(presaleAddress, shortfall);
-      console.log(`fundPresale tx: ${tx.hash}`);
-      await tx.wait(confirmations);
-      txHash = tx.hash;
-    }
+    newImplementation = await hre.upgrades.prepareUpgrade(presaleAddress, PresaleV2, { kind: "uups" });
+    const tx = await presale.connect(signer).upgradeToAndCall(newImplementation, "0x");
+    console.log(`upgradePresale tx: ${tx.hash}`);
+    await tx.wait(confirmations);
+    txHash = tx.hash;
   }
 
-  const presalePesBalanceAfter = await pes.balanceOf(presaleAddress);
+  const implementationAfter = await hre.upgrades.erc1967.getImplementationAddress(presaleAddress);
   const result = {
     runAt: new Date().toISOString(),
     mode: execute ? "execute" : "dry-run",
     network: "bsc",
     chainId: network.chainId.toString(),
     signer: signerAddress,
-    contracts: {
-      pesToken: {
-        proxy: pesAddress,
-        owner: tokenOwner,
-        explorer: addressUrl(pesAddress),
-      },
-      presaleVesting: {
-        proxy: presaleAddress,
-        owner: presaleOwner,
-        explorer: addressUrl(presaleAddress),
-      },
+    storageValidation: "passed",
+    presaleVesting: {
+      proxy: presaleAddress,
+      owner,
+      explorer: addressUrl(presaleAddress),
+      implementationBefore: currentImplementation,
+      implementationAfter,
+      newImplementation,
+      newImplementationExplorer: newImplementation ? addressUrl(newImplementation) : null,
     },
-    funding: {
-      requiredFunding: formatPes(requiredFunding),
-      targetFunding: formatPes(targetFunding),
-      ownerPesBalance: formatPes(ownerPesBalance),
-      presalePesBalanceBefore: formatPes(presalePesBalance),
-      shortfallTransferred: formatPes(execute ? shortfall : 0n),
-      shortfallPending: formatPes(execute ? 0n : shortfall),
-      presalePesBalanceAfter: formatPes(presalePesBalanceAfter),
+    linkedContracts: {
+      pesToken,
+      paymentToken,
+    },
+    saleState: {
+      maxPackages: maxPackages.toString(),
+      pesPerPackage: formatPes(pesPerPackage),
+      requiredFunding: formatPes(maxPackages * pesPerPackage),
       totalTokensAllocated: formatPes(totalTokensAllocated),
       totalTokensClaimed: formatPes(totalTokensClaimed),
       unclaimedAllocatedTokens: formatPes(unclaimedAllocatedTokens),
     },
     transactions: {
-      fundPresale: txUrl(txHash),
+      upgradePresale: txUrl(txHash),
     },
   };
 
-  console.log("BSC_MAINNET_PRESALE_FUNDING_RESULT_START");
+  console.log("BSC_MAINNET_PRESALE_UPGRADE_RESULT_START");
   console.log(JSON.stringify(result, null, 2));
-  console.log("BSC_MAINNET_PRESALE_FUNDING_RESULT_END");
+  console.log("BSC_MAINNET_PRESALE_UPGRADE_RESULT_END");
+
+  if (execute) {
+    const outputPath = path.join(
+      process.cwd(),
+      "deployments",
+      `bsc-mainnet-presale-upgrade-${new Date().toISOString().slice(0, 10)}.json`
+    );
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, `${JSON.stringify(result, null, 2)}\n`);
+    console.log(`Deployment file: ${outputPath}`);
+  }
 }
 
 main().catch((error) => {

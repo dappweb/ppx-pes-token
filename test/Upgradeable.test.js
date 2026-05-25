@@ -64,6 +64,7 @@ describe("Upgradeable PES contracts", function () {
     );
     await presale.waitForDeployment();
 
+    await pes.transfer(await presale.getAddress(), ethers.parseUnits("3000000", 18));
     await presale.grantAllocation(buyer.address, 1);
     await presale.setVestingConfigAndProgress(86_400, 40, 2);
 

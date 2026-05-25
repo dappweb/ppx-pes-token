@@ -1,0 +1,36 @@
+{
+  "runAt": "2026-05-25T09:04:27.455Z",
+  "mode": "execute",
+  "network": "bsc",
+  "chainId": "56",
+  "presaleVesting": {
+    "proxy": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+    "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "implementationBefore": "0x5cc66c05592069a83f2795763a9B154C1226b283",
+    "implementationAfter": "0x57B67860ca1941b4fC1EFb98D58c693639183A8a"
+  },
+  "linkedContracts": {
+    "pesToken": "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
+    "paymentToken": "0x55d398326f99059fF775485246999027B3197955"
+  },
+  "transactions": {
+    "deployImplementation": "https://bscscan.com/tx/0x9b98a33cb7b2998d43f55a0a70222573e2fcdfef8cc3dad85aaa1cfdac97a839",
+    "upgradePresale": "https://bscscan.com/tx/0x777d7a4cc50283146a3e0eba57bdc94f258467eedb3823687b6d82ec6673e18e"
+  },
+  "postUpgradeState": {
+    "paused": false,
+    "paymentPerPackage": "0.1",
+    "pesPerPackage": "3000.0",
+    "maxPackages": "1000",
+    "publicPackageCap": "1000",
+    "perWalletPackageLimit": "1",
+    "totalTokensAllocated": "0.0",
+    "totalTokensClaimed": "0.0",
+    "unclaimedAllocatedTokens": "0.0"
+  },
+  "notes": [
+    "Storage validation passed before execution.",
+    "Implementation deployment succeeded first; proxy upgrade was completed by direct upgradeToAndCall after BSC RPC returned an empty transaction to field that Hardhat could not parse.",
+    "The local OpenZeppelin BSC manifest was refreshed with forceImport after the manual proxy upgrade."
+  ]
+}

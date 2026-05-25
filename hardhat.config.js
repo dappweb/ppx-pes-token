@@ -5,6 +5,7 @@ require("dotenv").config();
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const BSC_RPC_URL = process.env.BSC_RPC_URL;
 const BSC_TESTNET_RPC_URL = process.env.BSC_TESTNET_RPC_URL;
+const DEFAULT_BSC_RPC_URL = "https://bsc-rpc.publicnode.com";
 
 /** @type import("hardhat/config").HardhatUserConfig */
 module.exports = {
@@ -22,7 +23,7 @@ module.exports = {
       chainId: 31337,
     },
     bsc: {
-      url: BSC_RPC_URL || "",
+      url: BSC_RPC_URL || DEFAULT_BSC_RPC_URL,
       accounts: PRIVATE_KEY ? [PRIVATE_KEY] : [],
       chainId: 56,
     },

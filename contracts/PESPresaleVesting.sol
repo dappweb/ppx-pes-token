@@ -68,6 +68,8 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
     error LaunchAlreadyStarted();
     error NoTokensClaimable();
     error ReservedTokenRecovery();
+    error VestingProgressDecrease();
+    error VestingProgressTooHigh();
 
     constructor(
         IERC20 pesToken_,
@@ -294,12 +296,24 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
             revert InvalidAmount();
         }
 
+        if (elapsedVestingPeriods > uint256(newVestingPeriods) + 1) {
+            revert VestingProgressTooHigh();
+        }
+
         vestingPeriodSeconds = newVestingPeriodSeconds;
         vestingPeriods = newVestingPeriods;
         emit VestingConfigUpdated(newVestingPeriodSeconds, newVestingPeriods);
     }
 
     function _setElapsedVestingPeriods(uint16 newElapsedVestingPeriods) internal {
+        if (newElapsedVestingPeriods < elapsedVestingPeriods) {
+            revert VestingProgressDecrease();
+        }
+
+        if (newElapsedVestingPeriods > uint256(vestingPeriods) + 1) {
+            revert VestingProgressTooHigh();
+        }
+
         elapsedVestingPeriods = newElapsedVestingPeriods;
         emit ElapsedVestingPeriodsUpdated(newElapsedVestingPeriods);
     }
@@ -347,7 +361,6 @@ contract PESPresaleVesting is Ownable, Pausable, ReentrancyGuard {
         }
 
         tokenAmount = pesPerPackage * packages;
-
         Allocation storage allocation = allocations[account];
         allocation.packages += packages;
         allocation.tokens += tokenAmount;

@@ -635,10 +635,7 @@ function ClientPanel({
   const accountPackages = data?.allocation?.packages || 0n;
   const walletRemaining = positiveRemaining(walletPackageLimit, accountPackages);
   const ipPolicyReady = Boolean(ipPolicy?.ok && ipPolicy?.enabled);
-  const ipRemaining = ipPolicy?.whitelisted
-    ? publicRemaining
-    : BigInt(Math.max(0, Number(ipPolicy?.remainingPackages ?? 0)));
-  const purchaseLimit = ipPolicyReady ? minBigInt(publicRemaining, walletRemaining, ipRemaining) : 0n;
+  const purchaseLimit = minBigInt(publicRemaining, walletRemaining);
   const requestedBuyPackages = parsePositiveBigIntInput(buyPackages);
   const payableBuyPackages =
     purchaseLimit === 0n ? 0n : requestedBuyPackages > purchaseLimit ? purchaseLimit : requestedBuyPackages;
@@ -653,10 +650,10 @@ function ClientPanel({
   const vestingPeriodLabel = formatPeriodSeconds(data?.vestingPeriodSeconds || 86_400n);
   const vestingPeriodsLabel = formatInteger(data?.vestingPeriods || 40n);
   const ipLimitLabel = ipPolicy?.whitelisted
-    ? "当前 IP 已在白名单，不限制购买份数。"
+    ? "当前 IP 已在白名单，IP 风控记录不限制链上认购。"
     : ipPolicyReady
-      ? `当前 IP 限购 1 份，剩余 ${Math.max(0, Number(ipPolicy.remainingPackages || 0))} 份。`
-      : "正在读取 IP 限购状态，暂不可认购。";
+      ? `当前 IP 风控记录：已购 ${Math.max(0, Number(ipPolicy.usedPackages || 0))} 份，剩余 ${Math.max(0, Number(ipPolicy.remainingPackages || 0))} 份；链上仍按钱包限购执行。`
+      : "IP 风控状态暂未读取成功，不影响链上认购。";
 
   return (
     <Section
@@ -781,7 +778,7 @@ function ClientPanel({
             </Field>
           </div>
           <p className="purchaseLimitHint">
-            每个账号限购 {formatInteger(walletPackageLimit)} 份，当前账号剩余 {formatInteger(purchaseLimit)} 份。
+            每个账号限购 {formatInteger(walletPackageLimit)} 份，当前账号剩余 {formatInteger(walletRemaining)} 份。
           </p>
           <p className="purchaseLimitHint">{ipLimitLabel}</p>
           <div className="transactionChecklist" aria-label="购买前检查">
@@ -810,7 +807,7 @@ function ClientPanel({
             <Button
               icon={ShoppingCart}
               busy={busy === "approvePurchase"}
-              disabled={!account || !contractsReady || !ipPolicyReady || paymentRequired === 0n || purchaseLimit === 0n}
+              disabled={!account || !contractsReady || paymentRequired === 0n || purchaseLimit === 0n}
               onClick={() =>
                 runTransaction(needsApprove ? "授权并购买 PES 份额" : "购买 PES 份额", "approvePurchase", async ({
                   paymentToken,
@@ -818,11 +815,6 @@ function ClientPanel({
                   presaleAddress,
                   notify,
                 }) => {
-                  const latestIpPolicy = await refreshIpPolicy?.();
-                  if (!latestIpPolicy?.whitelisted && Number(latestIpPolicy?.remainingPackages || 0) < Number(payableBuyPackages)) {
-                    throw new Error("当前 IP 已达到认购上限");
-                  }
-
                   if (needsApprove) {
                     notify("info", `等待钱包确认 ${payment?.symbol || "USDT"} 授权`);
                     const approveTx = await paymentToken.approve(presaleAddress, paymentRequired);
@@ -835,11 +827,15 @@ function ClientPanel({
                   return {
                     tx,
                     afterConfirmed: async (receipt) => {
-                      await recordIpPurchase?.({
-                        account,
-                        packages: Number(payableBuyPackages),
-                        transactionHash: receipt?.hash || tx.hash,
-                      });
+                      try {
+                        await recordIpPurchase?.({
+                          account,
+                          packages: Number(payableBuyPackages),
+                          transactionHash: receipt?.hash || tx.hash,
+                        });
+                      } catch (error) {
+                        notify("info", `链上认购已成功，IP 风控记录未更新：${getErrorMessage(error)}`);
+                      }
                     },
                   };
                 })
