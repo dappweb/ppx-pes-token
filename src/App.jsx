@@ -325,12 +325,15 @@ function parseBatchAllocations(text) {
     .filter(Boolean);
 
   return lines.map((line, index) => {
-    const [account, packages] = line.split(/[,\s]+/).filter(Boolean);
-    const normalized = normalizeAddress(account);
-    if (!normalized || !packages || !/^[1-9]\d*$/.test(packages)) {
-      throw new Error(`第 ${index + 1} 行格式错误`);
+    const parts = line.split(/[,\s]+/).filter(Boolean);
+    if (parts.length !== 1) {
+      throw new Error(`第 ${index + 1} 行只填写地址`);
     }
-    return { account: normalized, packages: BigInt(packages) };
+    const normalized = normalizeAddress(parts[0]);
+    if (!normalized) {
+      throw new Error(`第 ${index + 1} 行地址格式错误`);
+    }
+    return { account: normalized, packages: 1n };
   });
 }
 
@@ -1392,12 +1395,12 @@ function AdminPanel({
           </Button>
 
           <div className="divider" />
-          <Field label="批量分配(address,packages)">
+          <Field label="批量分配(address)">
             <textarea
               rows="7"
               value={batchText}
               onChange={(event) => setBatchText(event.target.value)}
-              placeholder="0x0000000000000000000000000000000000000001,1"
+              placeholder="0x0000000000000000000000000000000000000001"
             />
           </Field>
           <div className="formGrid two batchControls">
