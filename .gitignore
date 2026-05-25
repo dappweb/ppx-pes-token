@@ -6,7 +6,6 @@ typechain-types/
 .env
 .coverage.json
 gas-report.txt
-dist/
 output/playwright/
 .playwright-cli/
 vite-dev*.log
