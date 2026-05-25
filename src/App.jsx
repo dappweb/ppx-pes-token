@@ -26,7 +26,6 @@ import { ERC20_ABI, PES_TOKEN_ABI, PRESALE_ABI } from "./lib/abis.js";
 
 const CONFIG_KEY = "pes-token-console-config";
 const ADMIN_ALLOCATIONS_CACHE_KEY = "pes-admin-allocations-cache";
-const IP_POLICY_ENDPOINT = "/api/ip-policy";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const TARGET_CHAIN_ID = "56";
 const TARGET_CHAIN_NAME = "BSC Mainnet";
@@ -37,17 +36,6 @@ const EVENT_QUERY_BLOCK_RANGE = Number(import.meta.env.VITE_EVENT_QUERY_BLOCK_RA
 const READ_PROVIDER_OPTIONS = { batchMaxCount: 1, batchStallTime: 0 };
 const OWNER_ALLOCATION_TARGET = 950n;
 const DEFAULT_ALLOCATION_CHUNK_SIZE = 100;
-const DEFAULT_IP_POLICY = {
-  ok: false,
-  enabled: false,
-  loading: true,
-  ip: "",
-  whitelisted: false,
-  usedPackages: 0,
-  remainingPackages: 1,
-  packageLimit: 1,
-  whitelist: [],
-};
 const DEFAULT_BSC_TESTNET_CONFIG = {
   pesAddress: "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
   presaleAddress: "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
@@ -100,47 +88,6 @@ function loadConfig() {
   } catch {
     return emptyConfig;
   }
-}
-
-async function fetchIpPolicy(includeWhitelist = false) {
-  const response = await fetch(`${IP_POLICY_ENDPOINT}${includeWhitelist ? "?admin=1" : ""}`, {
-    cache: "no-store",
-  });
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || payload.ok === false) {
-    throw new Error(payload.error || "IP 策略读取失败");
-  }
-  return payload;
-}
-
-async function postIpPolicy(payload) {
-  const response = await fetch(IP_POLICY_ENDPOINT, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  const result = await response.json().catch(() => ({}));
-  if (!response.ok || result.ok === false) {
-    throw new Error(result.error || "IP 策略保存失败");
-  }
-  return result;
-}
-
-async function signIpPolicyAdminAction(signer, action, ip) {
-  if (!signer) {
-    throw new Error("请先连接 Admin 钱包");
-  }
-
-  const admin = await signer.getAddress();
-  const message = [
-    "PES IP whitelist admin",
-    `Action: ${action}`,
-    `IP: ${ip}`,
-    `Admin: ${admin}`,
-    `Nonce: ${Date.now()}`,
-  ].join("\n");
-  const signature = await signer.signMessage(message);
-  return { admin, message, signature };
 }
 
 function loadCachedAdminAllocationRows(presaleAddress) {
@@ -619,9 +566,6 @@ function ClientPanel({
   busy,
   runTransaction,
   contractsReady,
-  ipPolicy,
-  refreshIpPolicy,
-  recordIpPurchase,
   number = "01",
   title = "用户端",
 }) {
@@ -634,7 +578,6 @@ function ClientPanel({
   const walletPackageLimit = data?.perWalletPackageLimit || 1n;
   const accountPackages = data?.allocation?.packages || 0n;
   const walletRemaining = positiveRemaining(walletPackageLimit, accountPackages);
-  const ipPolicyReady = Boolean(ipPolicy?.ok && ipPolicy?.enabled);
   const purchaseLimit = minBigInt(publicRemaining, walletRemaining);
   const requestedBuyPackages = parsePositiveBigIntInput(buyPackages);
   const payableBuyPackages =
@@ -649,11 +592,6 @@ function ClientPanel({
   const purchaseButtonText = !account ? "立即认购" : needsApprove ? "授权并购买" : "立即认购";
   const vestingPeriodLabel = formatPeriodSeconds(data?.vestingPeriodSeconds || 86_400n);
   const vestingPeriodsLabel = formatInteger(data?.vestingPeriods || 40n);
-  const ipLimitLabel = ipPolicy?.whitelisted
-    ? "当前 IP 已在白名单，IP 风控记录不限制链上认购。"
-    : ipPolicyReady
-      ? `当前 IP 风控记录：已购 ${Math.max(0, Number(ipPolicy.usedPackages || 0))} 份，剩余 ${Math.max(0, Number(ipPolicy.remainingPackages || 0))} 份；链上仍按钱包限购执行。`
-      : "IP 风控状态暂未读取成功，不影响链上认购。";
 
   return (
     <Section
@@ -780,7 +718,6 @@ function ClientPanel({
           <p className="purchaseLimitHint">
             每个账号限购 {formatInteger(walletPackageLimit)} 份，当前账号剩余 {formatInteger(walletRemaining)} 份。
           </p>
-          <p className="purchaseLimitHint">{ipLimitLabel}</p>
           <div className="transactionChecklist" aria-label="购买前检查">
             <div>
               <span>付款代币</span>
@@ -797,10 +734,6 @@ function ClientPanel({
             <div>
               <span>私募合约</span>
               <strong>{shortAddress(presaleAddress)}</strong>
-            </div>
-            <div>
-              <span>当前 IP</span>
-              <strong>{ipPolicy?.ip || "--"}</strong>
             </div>
           </div>
           <div className="buttonRow">
@@ -824,20 +757,7 @@ function ClientPanel({
                   }
 
                   const tx = await presale.purchasePackages(payableBuyPackages);
-                  return {
-                    tx,
-                    afterConfirmed: async (receipt) => {
-                      try {
-                        await recordIpPurchase?.({
-                          account,
-                          packages: Number(payableBuyPackages),
-                          transactionHash: receipt?.hash || tx.hash,
-                        });
-                      } catch (error) {
-                        notify("info", `链上认购已成功，IP 风控记录未更新：${getErrorMessage(error)}`);
-                      }
-                    },
-                  };
+                  return tx;
                 })
               }
           >
@@ -893,8 +813,6 @@ function AdminPanel({
   setConfig,
   account,
   signer,
-  ipPolicy,
-  refreshIpPolicy,
   adminAllocations = [],
   recordAdminAllocations,
   busy,
@@ -925,7 +843,6 @@ function AdminPanel({
   const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0 });
   const [allocationSearch, setAllocationSearch] = useState("");
   const [feeExclusion, setFeeExclusion] = useState({ account: "", excluded: "true" });
-  const [ipWhitelistForm, setIpWhitelistForm] = useState({ ip: "", note: "" });
 
   useEffect(() => {
     setSaleForm({ start: toDateTimeLocal(data?.saleStart), end: toDateTimeLocal(data?.saleEnd) });
@@ -998,28 +915,6 @@ function AdminPanel({
       return { error: getErrorMessage(error) };
     }
   }, [adminRemaining, batchChunkSize, batchText]);
-
-  const saveIpWhitelist = useCallback(async () => {
-    const ip = ipWhitelistForm.ip.trim();
-    if (!ip) throw new Error("请输入 IP 地址");
-    const signed = await signIpPolicyAdminAction(signer, "setWhitelist", ip);
-    await postIpPolicy({
-      action: "setWhitelist",
-      ip,
-      note: ipWhitelistForm.note,
-      ...signed,
-    });
-    await refreshIpPolicy?.(true);
-  }, [ipWhitelistForm.ip, ipWhitelistForm.note, refreshIpPolicy, signer]);
-
-  const removeIpWhitelist = useCallback(
-    async (ip) => {
-      const signed = await signIpPolicyAdminAction(signer, "removeWhitelist", ip);
-      await postIpPolicy({ action: "removeWhitelist", ip, ...signed });
-      await refreshIpPolicy?.(true);
-    },
-    [refreshIpPolicy, signer]
-  );
 
   return (
     <Section
@@ -1569,100 +1464,6 @@ function AdminPanel({
           </div>
 
           <div className="divider" />
-          <h4>认购 IP 白名单</h4>
-          <div className="dataList compact">
-            <span>当前访问 IP</span>
-            <strong>{ipPolicy?.ip || "--"}</strong>
-            <span>IP 限购</span>
-            <strong>{ipPolicy?.packageLimit || 1} 份</strong>
-            <span>当前 IP 已购</span>
-            <strong>{ipPolicy?.usedPackages || 0} 份</strong>
-            <span>当前 IP 状态</span>
-            <strong>{ipPolicy?.whitelisted ? "白名单，不限份数" : "普通 IP"}</strong>
-          </div>
-          <div className="formGrid two">
-            <Field label="白名单 IP">
-              <input
-                value={ipWhitelistForm.ip}
-                onChange={(event) => setIpWhitelistForm({ ...ipWhitelistForm, ip: event.target.value })}
-                placeholder="例如 1.2.3.4"
-              />
-            </Field>
-            <Field label="备注">
-              <input
-                value={ipWhitelistForm.note}
-                onChange={(event) => setIpWhitelistForm({ ...ipWhitelistForm, note: event.target.value })}
-                placeholder="渠道/内部测试"
-              />
-            </Field>
-          </div>
-          <Button
-            icon={ShieldCheck}
-            variant="secondary"
-            disabled={!isOwner || !signer || !ipWhitelistForm.ip.trim()}
-            onClick={async () => {
-              try {
-                notify?.("info", "等待 Admin 钱包签名");
-                await saveIpWhitelist();
-                notify?.("success", "IP 白名单已保存");
-              } catch (error) {
-                notify?.("error", getErrorMessage(error));
-              }
-            }}
-          >
-            保存 IP 白名单
-          </Button>
-
-          {ipPolicy?.whitelist?.length ? (
-            <div className="allocationTableWrap compactTable">
-              <table className="allocationTable">
-                <thead>
-                  <tr>
-                    <th>IP</th>
-                    <th>备注</th>
-                    <th>更新时间</th>
-                    <th>操作</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ipPolicy.whitelist.map((row) => (
-                    <tr key={row.ip}>
-                      <td>
-                        <code>{row.ip}</code>
-                      </td>
-                      <td>{row.note || "--"}</td>
-                      <td>{formatTimestamp(Math.floor(new Date(row.updatedAt).getTime() / 1000))}</td>
-                      <td>
-                        <div className="tableActions">
-                          <button type="button" onClick={() => setIpWhitelistForm({ ip: row.ip, note: row.note || "" })}>
-                            回填
-                          </button>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              try {
-                                notify?.("info", "等待 Admin 钱包签名");
-                                await removeIpWhitelist(row.ip);
-                                notify?.("success", "IP 白名单已移除");
-                              } catch (error) {
-                                notify?.("error", getErrorMessage(error));
-                              }
-                            }}
-                          >
-                            移除
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <div className="emptyState">暂无 IP 白名单；普通 IP 默认最多认购 1 份。</div>
-          )}
-
-          <div className="divider" />
           <div className="formGrid two">
             <Field label="免手续费地址">
               <input
@@ -1733,7 +1534,6 @@ export default function App() {
   const [notice, setNotice] = useState(null);
   const [busy, setBusy] = useState("");
   const [buyPackages, setBuyPackages] = useState("1");
-  const [ipPolicy, setIpPolicy] = useState(DEFAULT_IP_POLICY);
   const [path, setPath] = useState(() => window.location.pathname);
   const adminAllocationScanRef = useRef({ presaleAddress: "", scannedToBlock: 0, rows: [] });
 
@@ -1769,41 +1569,6 @@ export default function App() {
     setConfig(normalized);
     setNotice({ type: "success", message: "配置已保存" });
   }, [config]);
-
-  const refreshIpPolicy = useCallback(
-    async (includeWhitelist = isAdminRoute) => {
-      setIpPolicy((current) => ({ ...current, loading: true }));
-      try {
-        const nextPolicy = await fetchIpPolicy(includeWhitelist);
-        const mergedPolicy = { ...DEFAULT_IP_POLICY, ...nextPolicy, loading: false };
-        setIpPolicy(mergedPolicy);
-        return mergedPolicy;
-      } catch (error) {
-        const failedPolicy = {
-          ...DEFAULT_IP_POLICY,
-          loading: false,
-          error: getErrorMessage(error),
-        };
-        setIpPolicy(failedPolicy);
-        return failedPolicy;
-      }
-    },
-    [isAdminRoute]
-  );
-
-  const recordIpPurchase = useCallback(
-    async ({ account: buyer, packages, transactionHash }) => {
-      const result = await postIpPolicy({
-        action: "recordPurchase",
-        account: buyer,
-        packages,
-        transactionHash,
-      });
-      const nextPolicy = await refreshIpPolicy(isAdminRoute);
-      return { ...result, ...nextPolicy };
-    },
-    [isAdminRoute, refreshIpPolicy]
-  );
 
   const refreshData = useCallback(async () => {
     if (!readProvider || !isAddress(config.pesAddress) || !isAddress(config.presaleAddress)) return;
@@ -2199,10 +1964,6 @@ export default function App() {
   }, [refreshData]);
 
   useEffect(() => {
-    refreshIpPolicy(isAdminRoute);
-  }, [isAdminRoute, refreshIpPolicy]);
-
-  useEffect(() => {
     document.title = isAdminRoute ? "PES Admin Console" : "PES Presale";
   }, [isAdminRoute]);
 
@@ -2293,8 +2054,6 @@ export default function App() {
                 setConfig={setConfig}
                 account={account}
                 signer={signer}
-                ipPolicy={ipPolicy}
-                refreshIpPolicy={refreshIpPolicy}
                 adminAllocations={adminAllocations}
                 recordAdminAllocations={recordAdminAllocations}
                 busy={busy}
@@ -2319,9 +2078,6 @@ export default function App() {
               busy={busy}
               runTransaction={runTransaction}
               contractsReady={contractsReady}
-              ipPolicy={ipPolicy}
-              refreshIpPolicy={refreshIpPolicy}
-              recordIpPurchase={recordIpPurchase}
               number="01"
               title="PES 私募认购"
             />
