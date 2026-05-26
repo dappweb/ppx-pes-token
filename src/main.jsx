@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { WagmiProvider } from "wagmi";
 import App from "./App.jsx";
 import "./styles.css";
-import { bsc, wagmiConfig } from "./wagmi.js";
+import { targetChain, wagmiConfig } from "./wagmi.js";
 
 const queryClient = new QueryClient();
 
@@ -14,7 +14,7 @@ createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider initialChain={bsc} locale="zh-CN" modalSize="compact">
+        <RainbowKitProvider initialChain={targetChain} locale="zh-CN" modalSize="compact">
           <App />
         </RainbowKitProvider>
       </QueryClientProvider>

@@ -1,17 +1,20 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import { http } from "wagmi";
-import { bsc } from "wagmi/chains";
+import { bsc, bscTestnet } from "wagmi/chains";
 
-const readRpcUrl = import.meta.env.VITE_READ_RPC_URL || "https://bsc-rpc.publicnode.com";
+const targetChain = import.meta.env.VITE_TARGET_CHAIN_ID === "97" ? bscTestnet : bsc;
+const readRpcUrl =
+  import.meta.env.VITE_READ_RPC_URL ||
+  (targetChain.id === bscTestnet.id ? "https://bsc-testnet-rpc.publicnode.com" : "https://bsc-rpc.publicnode.com");
 const walletConnectProjectId = import.meta.env.VITE_WALLETCONNECT_PROJECT_ID || "PES_TESTNET_PROJECT_ID";
 
 export const wagmiConfig = getDefaultConfig({
   appName: "PES Presale",
   projectId: walletConnectProjectId,
-  chains: [bsc],
+  chains: [targetChain],
   transports: {
-    [bsc.id]: http(readRpcUrl),
+    [targetChain.id]: http(readRpcUrl),
   },
 });
 
-export { bsc };
+export { targetChain };
