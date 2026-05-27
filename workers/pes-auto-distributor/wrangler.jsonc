@@ -4,7 +4,7 @@
   "compatibility_date": "2026-05-08",
   "compatibility_flags": ["nodejs_compat"],
   "triggers": {
-    "crons": ["0 12 * * *"]
+    "crons": ["10 16 * * *"]
   },
   "vars": {
     "CHAIN_ID": "56",
