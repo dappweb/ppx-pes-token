@@ -1,0 +1,43 @@
+{
+  "runAt": "2026-05-27T10:07:51.000Z",
+  "mode": "execute",
+  "network": "bsc",
+  "chainId": "56",
+  "presaleVesting": {
+    "proxy": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+    "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "implementationBefore": "0x57B67860ca1941b4fC1EFb98D58c693639183A8a",
+    "implementationAfter": "0xb5ba3CCC00F7f6df5C4A46C3Db3193a4Bd964C6B"
+  },
+  "autoDistribution": {
+    "keeper": "0x7123A25d205190e6844712Cb18e39d6DD5316143",
+    "manualClaimEnabled": false,
+    "firstReleaseTime": {
+      "timestamp": "1779984600",
+      "utc": "2026-05-28T16:10:00.000Z",
+      "beijing": "2026-05-29 00:10:00 +08:00"
+    },
+    "periodSeconds": "86400"
+  },
+  "transactions": {
+    "deployImplementation": "https://bscscan.com/tx/0x665da912be0130b50f705c11435d7a09ebd5ce23b1bf99ccaa8f9047191b8398",
+    "upgradePresale": "https://bscscan.com/tx/0xc99125e65cc4fbc1dd06fef075ab92b2d94b4e0b6e8157598f58f7328173b42f"
+  },
+  "postUpgradeState": {
+    "paused": false,
+    "keeper": "0x7123A25d205190e6844712Cb18e39d6DD5316143",
+    "manualClaimEnabled": false,
+    "autoDistributionStart": "1779984600",
+    "autoDistributionPeriodSeconds": "86400",
+    "currentScheduledElapsedPeriods": "0",
+    "elapsedVestingPeriods": "0",
+    "totalTokensAllocated": "3000000.0",
+    "totalTokensClaimed": "0.0",
+    "unclaimedAllocatedTokens": "3000000.0"
+  },
+  "notes": [
+    "Storage validation passed before execution.",
+    "Implementation deployment succeeded first; proxy upgrade was completed by direct upgradeToAndCall after BSC RPC returned an empty transaction to field that Hardhat could not parse.",
+    "Worker status verified v3Supported=true and signerAuthorized=true after upgrade."
+  ]
+}
