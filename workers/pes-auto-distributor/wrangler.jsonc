@@ -1,0 +1,16 @@
+{
+  "name": "pes-auto-distributor",
+  "main": "src/index.js",
+  "compatibility_date": "2026-05-08",
+  "compatibility_flags": ["nodejs_compat"],
+  "triggers": {
+    "crons": ["0 12 * * *"]
+  },
+  "vars": {
+    "CHAIN_ID": "56",
+    "BSC_RPC_URL": "https://bsc-rpc.publicnode.com",
+    "PRESALE_ADDRESS": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+    "BATCH_SIZE": "80",
+    "CONFIRMATIONS": "1"
+  }
+}

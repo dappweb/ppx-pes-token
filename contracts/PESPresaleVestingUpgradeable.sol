@@ -66,6 +66,11 @@ contract PESPresaleVestingUpgradeable is
 
     mapping(address => Allocation) public allocations;
 
+    address public keeper;
+    bool public manualClaimEnabled;
+    uint64 public autoDistributionStart;
+    uint64 public autoDistributionPeriodSeconds;
+
     event PackagesPurchased(address indexed buyer, uint256 packages, uint256 paymentAmount, uint256 tokenAmount);
     event AdminAllocationGranted(address indexed account, uint256 packages, uint256 tokenAmount);
     event Claimed(address indexed account, uint256 amount);
@@ -74,6 +79,15 @@ contract PESPresaleVestingUpgradeable is
     event VestingConfigUpdated(uint64 vestingPeriodSeconds, uint16 vestingPeriods);
     event ElapsedVestingPeriodsUpdated(uint16 elapsedVestingPeriods);
     event FundsWalletUpdated(address indexed fundsWallet);
+    event KeeperUpdated(address indexed keeper);
+    event ManualClaimEnabledUpdated(bool enabled);
+    event AutoDistributionScheduleUpdated(uint64 firstReleaseTime, uint64 periodSeconds);
+    event AutoDistributionBatch(
+        address indexed executor,
+        uint16 elapsedVestingPeriods,
+        uint256 accountCount,
+        uint256 distributedAmount
+    );
     event PackageConfigUpdated(
         uint256 paymentPerPackage,
         uint256 pesPerPackage,
@@ -94,6 +108,10 @@ contract PESPresaleVestingUpgradeable is
     error ReservedTokenRecovery();
     error VestingProgressDecrease();
     error VestingProgressTooHigh();
+    error ManualClaimDisabled();
+    error NotOwnerOrKeeper();
+    error AutoDistributionNotStarted();
+    error InvalidAutoDistributionSchedule();
 
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
@@ -129,6 +147,17 @@ contract PESPresaleVestingUpgradeable is
 
         launchTime = params.launchTime;
         emit LaunchTimeUpdated(params.launchTime);
+    }
+
+    function initializeV3(
+        address initialKeeper,
+        bool initialManualClaimEnabled,
+        uint64 firstReleaseTime,
+        uint64 periodSeconds
+    ) external reinitializer(3) onlyOwner {
+        _setKeeper(initialKeeper);
+        _setManualClaimEnabled(initialManualClaimEnabled);
+        _setAutoDistributionSchedule(firstReleaseTime, periodSeconds);
     }
 
     function pause() external onlyOwner {
@@ -171,6 +200,18 @@ contract PESPresaleVestingUpgradeable is
 
     function setFundsWallet(address newFundsWallet) external onlyOwner {
         _setFundsWallet(newFundsWallet);
+    }
+
+    function setKeeper(address newKeeper) external onlyOwner {
+        _setKeeper(newKeeper);
+    }
+
+    function setManualClaimEnabled(bool enabled) external onlyOwner {
+        _setManualClaimEnabled(enabled);
+    }
+
+    function setAutoDistributionSchedule(uint64 firstReleaseTime, uint64 periodSeconds) external onlyOwner {
+        _setAutoDistributionSchedule(firstReleaseTime, periodSeconds);
     }
 
     function setPackageConfig(
@@ -237,16 +278,53 @@ contract PESPresaleVestingUpgradeable is
     }
 
     function claim() external nonReentrant whenNotPaused returns (uint256 claimedAmount) {
-        claimedAmount = claimableAmount(msg.sender);
-        if (claimedAmount == 0) {
-            revert NoTokensClaimable();
+        if (!manualClaimEnabled) {
+            revert ManualClaimDisabled();
         }
 
-        allocations[msg.sender].claimed += claimedAmount;
-        totalTokensClaimed += claimedAmount;
-        pesToken.safeTransfer(msg.sender, claimedAmount);
+        claimedAmount = _claimFor(msg.sender, true);
+    }
 
-        emit Claimed(msg.sender, claimedAmount);
+    function distributeVested(address[] calldata accounts)
+        external
+        onlyOwnerOrKeeper
+        nonReentrant
+        whenNotPaused
+        returns (uint256 distributedAmount)
+    {
+        uint16 targetElapsedPeriods = currentScheduledElapsedPeriods();
+        if (targetElapsedPeriods == 0) {
+            revert AutoDistributionNotStarted();
+        }
+
+        if (targetElapsedPeriods > elapsedVestingPeriods) {
+            _setElapsedVestingPeriods(targetElapsedPeriods);
+        }
+
+        for (uint256 i = 0; i < accounts.length; i++) {
+            distributedAmount += _claimFor(accounts[i], false);
+        }
+
+        emit AutoDistributionBatch(msg.sender, elapsedVestingPeriods, accounts.length, distributedAmount);
+    }
+
+    function currentScheduledElapsedPeriods() public view returns (uint16) {
+        if (
+            autoDistributionStart == 0 || autoDistributionPeriodSeconds == 0
+                || block.timestamp < autoDistributionStart
+        ) {
+            return 0;
+        }
+
+        uint256 elapsedAfterFirst = (block.timestamp - autoDistributionStart) / autoDistributionPeriodSeconds;
+        uint256 targetElapsed = 1 + elapsedAfterFirst;
+        uint256 maxElapsed = uint256(vestingPeriods) + 1;
+
+        if (targetElapsed > maxElapsed) {
+            targetElapsed = maxElapsed;
+        }
+
+        return uint16(targetElapsed);
     }
 
     function vestedAmount(address account) public view returns (uint256) {
@@ -306,6 +384,13 @@ contract PESPresaleVestingUpgradeable is
         _reentrancyStatus = NOT_ENTERED;
     }
 
+    modifier onlyOwnerOrKeeper() {
+        if (msg.sender != owner() && msg.sender != keeper) {
+            revert NotOwnerOrKeeper();
+        }
+        _;
+    }
+
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 
     function _setSaleWindow(uint64 newSaleStart, uint64 newSaleEnd) internal {
@@ -325,6 +410,26 @@ contract PESPresaleVestingUpgradeable is
 
         fundsWallet = newFundsWallet;
         emit FundsWalletUpdated(newFundsWallet);
+    }
+
+    function _setKeeper(address newKeeper) internal {
+        keeper = newKeeper;
+        emit KeeperUpdated(newKeeper);
+    }
+
+    function _setManualClaimEnabled(bool enabled) internal {
+        manualClaimEnabled = enabled;
+        emit ManualClaimEnabledUpdated(enabled);
+    }
+
+    function _setAutoDistributionSchedule(uint64 firstReleaseTime, uint64 periodSeconds) internal {
+        if (firstReleaseTime == 0 || periodSeconds == 0) {
+            revert InvalidAutoDistributionSchedule();
+        }
+
+        autoDistributionStart = firstReleaseTime;
+        autoDistributionPeriodSeconds = periodSeconds;
+        emit AutoDistributionScheduleUpdated(firstReleaseTime, periodSeconds);
     }
 
     function _setVestingConfig(uint64 newVestingPeriodSeconds, uint16 newVestingPeriods) internal {
@@ -402,5 +507,21 @@ contract PESPresaleVestingUpgradeable is
         allocation.tokens += tokenAmount;
         totalPackagesAllocated += packages;
         totalTokensAllocated += tokenAmount;
+    }
+
+    function _claimFor(address account, bool revertIfZero) internal returns (uint256 claimedAmount) {
+        claimedAmount = claimableAmount(account);
+        if (claimedAmount == 0) {
+            if (revertIfZero) {
+                revert NoTokensClaimable();
+            }
+            return 0;
+        }
+
+        allocations[account].claimed += claimedAmount;
+        totalTokensClaimed += claimedAmount;
+        pesToken.safeTransfer(account, claimedAmount);
+
+        emit Claimed(account, claimedAmount);
     }
 }

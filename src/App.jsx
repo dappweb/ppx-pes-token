@@ -882,16 +882,28 @@ function ClientPanel({
             <strong>{formatUnits(data?.pesBalance || 0n)} PES</strong>
             <span>{payment?.symbol || "USDT"} 余额</span>
             <strong>{formatUnits(payment?.balance || 0n, payment?.decimals || 18, 2)}</strong>
+            {data?.autoDistributionSupported ? (
+              <>
+                <span>发放方式</span>
+                <strong>{data?.manualClaimEnabled ? "手动领取" : "系统自动发放"}</strong>
+                <span>下次计划周期</span>
+                <strong>{formatInteger(data?.currentScheduledElapsedPeriods || 0n)}</strong>
+              </>
+            ) : null}
           </div>
-          <Button
-            icon={Coins}
-            variant="primary"
-            busy={busy === "claim"}
-            disabled={!account || !contractsReady || !data?.claimable || data.claimable === 0n}
-            onClick={() => runTransaction("领取 PES", "claim", async ({ presale }) => presale.claim())}
-          >
-            领取已释放 PES
-          </Button>
+          {data?.manualClaimEnabled ? (
+            <Button
+              icon={Coins}
+              variant="primary"
+              busy={busy === "claim"}
+              disabled={!account || !contractsReady || !data?.claimable || data.claimable === 0n}
+              onClick={() => runTransaction("领取 PES", "claim", async ({ presale }) => presale.claim())}
+            >
+              领取已释放 PES
+            </Button>
+          ) : (
+            <div className="emptyState">PES 将由系统按释放计划自动发放到购买钱包，无需手动领取。</div>
+          )}
         </div>
       </div>
     </Section>
@@ -1844,6 +1856,11 @@ export default function App() {
           optionalContractCall(() => presale.vestingPeriodSeconds(), 86_400n),
           optionalContractCall(() => presale.vestingPeriods(), 40n),
           optionalContractCall(() => presale.elapsedVestingPeriods(), 0n),
+          optionalContractCall(() => presale.keeper(), ZERO_ADDRESS),
+          optionalContractCall(() => presale.manualClaimEnabled(), true),
+          optionalContractCall(() => presale.autoDistributionStart(), 0n),
+          optionalContractCall(() => presale.autoDistributionPeriodSeconds(), 86_400n),
+          optionalContractCall(() => presale.currentScheduledElapsedPeriods(), 0n),
           presale.publicPackagesSold(),
           presale.totalPackagesAllocated(),
           presale.totalTokensAllocated(),
@@ -1885,6 +1902,11 @@ export default function App() {
         vestingPeriodSecondsResult,
         vestingPeriodsResult,
         elapsedVestingPeriodsResult,
+        keeperResult,
+        manualClaimEnabledResult,
+        autoDistributionStartResult,
+        autoDistributionPeriodSecondsResult,
+        currentScheduledElapsedPeriodsResult,
         publicPackagesSold,
         totalPackagesAllocated,
         totalTokensAllocated,
@@ -1932,8 +1954,19 @@ export default function App() {
         vestingPeriodSeconds: vestingPeriodSecondsResult.value,
         vestingPeriods: vestingPeriodsResult.value,
         elapsedVestingPeriods: elapsedVestingPeriodsResult.value,
+        keeper: keeperResult.value,
+        manualClaimEnabled: manualClaimEnabledResult.value,
+        autoDistributionStart: autoDistributionStartResult.value,
+        autoDistributionPeriodSeconds: autoDistributionPeriodSecondsResult.value,
+        currentScheduledElapsedPeriods: currentScheduledElapsedPeriodsResult.value,
         vestingConfigSupported: vestingPeriodSecondsResult.supported && vestingPeriodsResult.supported,
         vestingProgressSupported: elapsedVestingPeriodsResult.supported,
+        autoDistributionSupported:
+          keeperResult.supported &&
+          manualClaimEnabledResult.supported &&
+          autoDistributionStartResult.supported &&
+          autoDistributionPeriodSecondsResult.supported &&
+          currentScheduledElapsedPeriodsResult.supported,
         publicPackagesSold,
         totalPackagesAllocated,
         totalTokensAllocated,

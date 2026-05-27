@@ -5,6 +5,9 @@ const hre = require("hardhat");
 const EXPLORER_BASE_URL = "https://bscscan.com";
 const DEFAULT_DEPLOYMENT_FILE = "deployments/bsc-mainnet-presale-config-2026-05-24.json";
 const FALLBACK_PRESALE_ADDRESS = "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd";
+const DEFAULT_KEEPER_ADDRESS = "0x7123A25d205190e6844712Cb18e39d6DD5316143";
+const DEFAULT_FIRST_RELEASE_TIME = "2026-05-29T20:00:00+08:00";
+const DEFAULT_AUTO_DISTRIBUTION_PERIOD_SECONDS = 86_400n;
 
 const PRESALE_ABI = [
   "function owner() view returns (address)",
@@ -15,6 +18,10 @@ const PRESALE_ABI = [
   "function totalTokensAllocated() view returns (uint256)",
   "function totalTokensClaimed() view returns (uint256)",
   "function unclaimedAllocatedTokens() view returns (uint256)",
+  "function keeper() view returns (address)",
+  "function manualClaimEnabled() view returns (bool)",
+  "function autoDistributionStart() view returns (uint64)",
+  "function autoDistributionPeriodSeconds() view returns (uint64)",
   "function upgradeToAndCall(address newImplementation, bytes data) payable",
 ];
 
@@ -27,6 +34,29 @@ function parseBool(name, fallback = false) {
   const value = env(name);
   if (value === null) return fallback;
   return ["1", "true", "yes", "y"].includes(value.toLowerCase());
+}
+
+function parseUint(name, fallback) {
+  const value = env(name);
+  if (value === null) return BigInt(fallback);
+  if (!/^\d+$/.test(value)) {
+    throw new Error(`${name} must be an unsigned integer`);
+  }
+  return BigInt(value);
+}
+
+function parseTimestamp(name, fallbackIso) {
+  const value = env(name) || fallbackIso;
+  if (/^\d+$/.test(value)) {
+    return BigInt(value);
+  }
+
+  const parsed = Date.parse(value);
+  if (!Number.isFinite(parsed)) {
+    throw new Error(`${name} must be a Unix timestamp or ISO datetime with timezone`);
+  }
+
+  return BigInt(Math.floor(parsed / 1000));
 }
 
 function readDeployment() {
@@ -55,6 +85,31 @@ function addressUrl(address) {
   return `${EXPLORER_BASE_URL}/address/${address}`;
 }
 
+function timestampInfo(value) {
+  const timestamp = Number(value);
+  if (timestamp === 0) {
+    return { timestamp: "0", utc: "0", beijing: "0" };
+  }
+
+  const date = new Date(timestamp * 1000);
+  const beijing = new Intl.DateTimeFormat("sv-SE", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: false,
+  }).format(date);
+
+  return {
+    timestamp: value.toString(),
+    utc: date.toISOString(),
+    beijing: `${beijing} +08:00`,
+  };
+}
+
 function formatPes(amount) {
   return hre.ethers.formatUnits(amount, 18);
 }
@@ -75,6 +130,13 @@ async function main() {
   const presaleAddress = checkedAddress(
     "PRESALE_ADDRESS",
     env("PRESALE_ADDRESS") || addressFromDeployment(deployment, "presaleVesting", FALLBACK_PRESALE_ADDRESS)
+  );
+  const keeperAddress = checkedAddress("KEEPER_ADDRESS", env("KEEPER_ADDRESS") || DEFAULT_KEEPER_ADDRESS);
+  const manualClaimEnabled = parseBool("MANUAL_CLAIM_ENABLED", false);
+  const firstReleaseTime = parseTimestamp("FIRST_RELEASE_TIME", DEFAULT_FIRST_RELEASE_TIME);
+  const autoDistributionPeriodSeconds = parseUint(
+    "AUTO_DISTRIBUTION_PERIOD_SECONDS",
+    DEFAULT_AUTO_DISTRIBUTION_PERIOD_SECONDS
   );
 
   const PresaleV2 = await hre.ethers.getContractFactory("PESPresaleVestingUpgradeable");
@@ -103,6 +165,31 @@ async function main() {
     hre.upgrades.erc1967.getImplementationAddress(presaleAddress),
   ]);
 
+  const currentV3State = {
+    supported: false,
+    keeper: null,
+    manualClaimEnabled: null,
+    autoDistributionStart: null,
+    autoDistributionPeriodSeconds: null,
+  };
+
+  try {
+    const [currentKeeper, currentManualClaimEnabled, currentAutoDistributionStart, currentAutoDistributionPeriodSeconds] =
+      await Promise.all([
+        presale.keeper(),
+        presale.manualClaimEnabled(),
+        presale.autoDistributionStart(),
+        presale.autoDistributionPeriodSeconds(),
+      ]);
+    currentV3State.supported = true;
+    currentV3State.keeper = currentKeeper;
+    currentV3State.manualClaimEnabled = currentManualClaimEnabled;
+    currentV3State.autoDistributionStart = currentAutoDistributionStart.toString();
+    currentV3State.autoDistributionPeriodSeconds = currentAutoDistributionPeriodSeconds.toString();
+  } catch {
+    // Pre-V3 implementation does not expose auto-distribution state yet.
+  }
+
   let signerAddress = null;
   let newImplementation = null;
   let txHash = null;
@@ -119,7 +206,13 @@ async function main() {
     }
 
     newImplementation = await hre.upgrades.prepareUpgrade(presaleAddress, PresaleV2, { kind: "uups" });
-    const tx = await presale.connect(signer).upgradeToAndCall(newImplementation, "0x");
+    const initData = PresaleV2.interface.encodeFunctionData("initializeV3", [
+      keeperAddress,
+      manualClaimEnabled,
+      firstReleaseTime,
+      autoDistributionPeriodSeconds,
+    ]);
+    const tx = await presale.connect(signer).upgradeToAndCall(newImplementation, initData);
     console.log(`upgradePresale tx: ${tx.hash}`);
     await tx.wait(confirmations);
     txHash = tx.hash;
@@ -153,6 +246,15 @@ async function main() {
       totalTokensAllocated: formatPes(totalTokensAllocated),
       totalTokensClaimed: formatPes(totalTokensClaimed),
       unclaimedAllocatedTokens: formatPes(unclaimedAllocatedTokens),
+    },
+    autoDistribution: {
+      current: currentV3State,
+      target: {
+        keeper: keeperAddress,
+        manualClaimEnabled,
+        firstReleaseTime: timestampInfo(firstReleaseTime),
+        periodSeconds: autoDistributionPeriodSeconds.toString(),
+      },
     },
     transactions: {
       upgradePresale: txUrl(txHash),
