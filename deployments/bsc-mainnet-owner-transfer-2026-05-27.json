@@ -1,0 +1,37 @@
+{
+  "runAt": "2026-05-27T12:00:15.393Z",
+  "mode": "execute",
+  "network": "bsc",
+  "chainId": "56",
+  "previousOwner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+  "newOwner": "0x042De5f683cA15633A208d2D23dB4F7F47A08821",
+  "contracts": {
+    "pesToken": {
+      "address": "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
+      "transaction": "https://bscscan.com/tx/0x30cfa4ff46b948f8493e19f6bc31f1aa35c16d39eba786ddbda2acdbdb696296",
+      "blockNumber": 100727499,
+      "gasUsed": "33556",
+      "ownerAfter": "0x042De5f683cA15633A208d2D23dB4F7F47A08821"
+    },
+    "presaleVesting": {
+      "proxy": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+      "transaction": "https://bscscan.com/tx/0x04b503d3fa9ca54e2d260086fca5ed0723a17087c86693a0e68fec4a3ca08667",
+      "blockNumber": 100727510,
+      "gasUsed": "33562",
+      "ownerAfter": "0x042De5f683cA15633A208d2D23dB4F7F47A08821"
+    }
+  },
+  "postTransferState": {
+    "pesOwner": "0x042De5f683cA15633A208d2D23dB4F7F47A08821",
+    "presaleOwner": "0x042De5f683cA15633A208d2D23dB4F7F47A08821",
+    "presaleKeeper": "0x7123A25d205190e6844712Cb18e39d6DD5316143",
+    "manualClaimEnabled": false,
+    "presalePaused": false,
+    "pesPaused": false
+  },
+  "notes": [
+    "Ownership transfer was executed by the previous owner.",
+    "The keeper address remains authorized for scheduled auto distribution.",
+    "Future owner-only PES and presale operations must be signed by the new owner."
+  ]
+}
