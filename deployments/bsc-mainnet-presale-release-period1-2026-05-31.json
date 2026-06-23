@@ -1,0 +1,133 @@
+{
+  "runAt": "2026-05-31T08:29:00.000Z",
+  "mode": "execute",
+  "network": "bsc",
+  "chainId": "56",
+  "release": {
+    "period": 1,
+    "releasePercent": "20",
+    "totalDistributed": "600000.0",
+    "accounts": 1000,
+    "batchSize": 80
+  },
+  "contracts": {
+    "pesToken": "0x40D51d93e3Eb057b3558DA71C7CCdEAa27713E41",
+    "presaleVesting": "0x38882c608F64a8dAA5fbAB9a0712361D72866B6B"
+  },
+  "executor": {
+    "worker": "https://pes-auto-distributor.dappweb.workers.dev",
+    "signer": "0x7123A25d205190e6844712Cb18e39d6DD5316143",
+    "source": "manual"
+  },
+  "stateBefore": {
+    "elapsedVestingPeriods": "0",
+    "scheduledElapsedPeriods": "1",
+    "totalTokensClaimed": "0.0"
+  },
+  "stateAfter": {
+    "blockNumber": 101500727,
+    "elapsedVestingPeriods": "1",
+    "scheduledElapsedPeriods": "1",
+    "totalTokensClaimed": "600000.0",
+    "unclaimedAllocatedTokens": "2400000.0",
+    "presalePesBalance": "100000.0"
+  },
+  "transactions": [
+    {
+      "batch": 1,
+      "accounts": 80,
+      "hash": "0x8cc3b21b04edf0cf493835065969892c3438a2834846d88204fdb66675ea8ced",
+      "blockNumber": 101500555,
+      "gasUsed": "4707833"
+    },
+    {
+      "batch": 2,
+      "accounts": 80,
+      "hash": "0xed044f3be6277bed1b6c030089b9735a2beda4a95f351c88f49ce5a4cac11e2f",
+      "blockNumber": 101500566,
+      "gasUsed": "4686158"
+    },
+    {
+      "batch": 3,
+      "accounts": 80,
+      "hash": "0xc0a91e9724016cb12187d7cc5559be0ff7b4f8396df857255f9e16a9c0f388aa",
+      "blockNumber": 101500576,
+      "gasUsed": "4686206"
+    },
+    {
+      "batch": 4,
+      "accounts": 80,
+      "hash": "0x0e0b5dde00e5126b85123da8daa99b079786e7f73d696c62fb719b195105acce",
+      "blockNumber": 101500586,
+      "gasUsed": "4686182"
+    },
+    {
+      "batch": 5,
+      "accounts": 80,
+      "hash": "0x943032b031581b62fcfb38a8a0f016a6ffd1e2f3594aa4239d2d8e8f2df05ad4",
+      "blockNumber": 101500596,
+      "gasUsed": "4686218"
+    },
+    {
+      "batch": 6,
+      "accounts": 80,
+      "hash": "0xac61540e023b7d44603dedd243d5aba9d216db8487f39e4ac7b0092379d760e9",
+      "blockNumber": 101500607,
+      "gasUsed": "4686230"
+    },
+    {
+      "batch": 7,
+      "accounts": 80,
+      "hash": "0x6aa563deb6041daa7e3118ec8b6801e7fbe4053077dbaa5c22c2acd0b43db344",
+      "blockNumber": 101500617,
+      "gasUsed": "4686182"
+    },
+    {
+      "batch": 8,
+      "accounts": 80,
+      "hash": "0x638ab0db035b3d62c5159a8e512654cb9bd063746fe301c084190ca9dca22b1d",
+      "blockNumber": 101500627,
+      "gasUsed": "4686218"
+    },
+    {
+      "batch": 9,
+      "accounts": 80,
+      "hash": "0xcbe0f3eff8f8df426447ac4a1d48985b0ccb294317827c67d45bbe4c11c3f4bd",
+      "blockNumber": 101500637,
+      "gasUsed": "4686218"
+    },
+    {
+      "batch": 10,
+      "accounts": 80,
+      "hash": "0x9cee67f26a30a4467d202a634ef21d83dea9dbb253a2c10e44213d76be087b19",
+      "blockNumber": 101500647,
+      "gasUsed": "4686146"
+    },
+    {
+      "batch": 11,
+      "accounts": 80,
+      "hash": "0x6eff75e2dac96536fd73f6046effdd6041931e607b0fa06cbaa5d03aeb3ed894",
+      "blockNumber": 101500657,
+      "gasUsed": "4686170"
+    },
+    {
+      "batch": 12,
+      "accounts": 80,
+      "hash": "0xdb5d2e1a34aba76fa220708ba328f01dee105cecada053e3a292602c4fcb1696",
+      "blockNumber": 101500668,
+      "gasUsed": "4669046"
+    },
+    {
+      "batch": 13,
+      "accounts": 40,
+      "hash": "0x0a9fed48db981c57f6cf10bd2a569a23c636a5b976efee28e9ff89d1a7225917",
+      "blockNumber": 101500678,
+      "gasUsed": "2235960"
+    }
+  ],
+  "notes": [
+    "DISTRIBUTOR_RUN_TOKEN was rotated before manual trigger.",
+    "The first release period was executed by the authorized keeper through the Cloudflare Worker.",
+    "Presale balance after period 1 is 100000 PES, so future periods require additional PES funding."
+  ]
+}

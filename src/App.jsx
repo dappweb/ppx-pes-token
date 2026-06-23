@@ -1,28 +1,38 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { ethers } from "ethers";
-import { useAccount, useChainId, useWalletClient } from "wagmi";
 import {
-  AlertTriangle,
-  CheckCircle2,
-  Clock,
-  Coins,
-  Copy,
-  Database,
-  ExternalLink,
-  Pause,
-  Play,
-  Power,
-  RefreshCw,
-  Save,
-  ShieldCheck,
-  ShoppingCart,
-  SlidersHorizontal,
-  Upload,
-  Users,
-  Wallet,
+    AlertTriangle,
+    CheckCircle2,
+    Clock,
+    Coins,
+    Copy,
+    Database,
+    ExternalLink,
+    Pause,
+    Play,
+    Power,
+    RefreshCw,
+    Save,
+    ShieldCheck,
+    ShoppingCart,
+    SlidersHorizontal,
+    Upload,
+    Users,
+    Wallet,
+    Zap,
 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useAccount, useChainId, useWalletClient } from "wagmi";
 import { ERC20_ABI, PES_TOKEN_ABI, PRESALE_ABI } from "./lib/abis.js";
+import { DISTRIBUTION_BUYERS, DISTRIBUTION_BUYER_COUNT } from "./lib/distribution-buyers.js";
+import {
+    DISTRIBUTION_BATCH_SIZE,
+    chunkArray,
+    computeAlignedAutoDistributionStart,
+    estimateCatchUpPesPerUser,
+    estimateDailyDistributionPes,
+    getScheduleLag,
+} from "./lib/vesting-ops.js";
 
 const CONFIG_KEY = "pes-token-console-config";
 const ADMIN_ALLOCATIONS_CACHE_KEY = "pes-admin-allocations-cache";
@@ -51,8 +61,8 @@ const DEFAULT_IP_POLICY = {
   whitelist: [],
 };
 const DEFAULT_BSC_TESTNET_CONFIG = {
-  pesAddress: "0xe83e750feEbe231c870DdF30165CbFE64F400Ebc",
-  presaleAddress: "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+  pesAddress: "0x40D51d93e3Eb057b3558DA71C7CCdEAa27713E41",
+  presaleAddress: "0x38882c608F64a8dAA5fbAB9a0712361D72866B6B",
   paymentTokenAddress: "0x55d398326f99059fF775485246999027B3197955",
 };
 const LEGACY_BSC_TESTNET_CONFIG = {
@@ -951,6 +961,8 @@ function AdminPanel({
   const [allocationSearch, setAllocationSearch] = useState("");
   const [feeExclusion, setFeeExclusion] = useState({ account: "", excluded: "true" });
   const [ipWhitelistForm, setIpWhitelistForm] = useState({ ip: "", note: "" });
+  const [fundPresaleAmount, setFundPresaleAmount] = useState("2000000");
+  const [distributionProgress, setDistributionProgress] = useState({ current: 0, total: 0 });
 
   useEffect(() => {
     setSaleForm({ start: toDateTimeLocal(data?.saleStart), end: toDateTimeLocal(data?.saleEnd) });
@@ -994,6 +1006,33 @@ function AdminPanel({
   const isPresaleOwner = Boolean(accountAddress && presaleOwnerAddress && presaleOwnerAddress === accountAddress);
   const isTokenOwner = Boolean(accountAddress && tokenOwnerAddress && tokenOwnerAddress === accountAddress);
   const isOwner = isPresaleOwner || isTokenOwner;
+  const keeperAddress = normalizeAddress(data?.keeper);
+  const isKeeper = Boolean(accountAddress && keeperAddress && keeperAddress === accountAddress);
+  const canRunDistribution = isPresaleOwner || isKeeper;
+  const scheduleLag = useMemo(
+    () => getScheduleLag(data?.elapsedVestingPeriods || 0n, data?.currentScheduledElapsedPeriods || 0n),
+    [data?.currentScheduledElapsedPeriods, data?.elapsedVestingPeriods]
+  );
+  const scheduleAligned = scheduleLag === 0n;
+  const catchUpPesPerUser = useMemo(
+    () =>
+      estimateCatchUpPesPerUser(
+        data?.pesPerPackage || 0n,
+        data?.elapsedVestingPeriods || 0n,
+        data?.currentScheduledElapsedPeriods || 0n,
+        data?.vestingPeriods || 40n
+      ),
+    [data?.currentScheduledElapsedPeriods, data?.elapsedVestingPeriods, data?.pesPerPackage, data?.vestingPeriods]
+  );
+  const dailyDistributionPes = useMemo(
+    () => estimateDailyDistributionPes(data?.pesPerPackage || 0n, DISTRIBUTION_BUYER_COUNT, data?.vestingPeriods || 40n),
+    [data?.pesPerPackage, data?.vestingPeriods]
+  );
+  const fundShortfall = useMemo(() => {
+    const target = ethers.parseUnits(fundPresaleAmount || "0", 18);
+    const current = data?.presalePesBalance || 0n;
+    return target > current ? target - current : 0n;
+  }, [data?.presalePesBalance, fundPresaleAmount]);
   const adminPublicSold = data?.publicPackagesSold || 0n;
   const adminTotalAllocated = data?.totalPackagesAllocated || 0n;
   const adminOwnerAllocated = adminTotalAllocated > adminPublicSold ? adminTotalAllocated - adminPublicSold : 0n;
@@ -1234,6 +1273,149 @@ function AdminPanel({
             <div className="emptyState">当前私募合约不支持释放周期设置；新合约部署后可在这里配置。</div>
           ) : null}
         </div>
+
+        {data?.autoDistributionSupported ? (
+          <div className="surfacePanel">
+            <div className="panelHeader">
+              <div>
+                <span className="panelKicker">AUTO DISTRIBUTION</span>
+                <h3>自动发放运维</h3>
+              </div>
+              <span className="panelStatus">{scheduleAligned ? "已对齐" : `落后 ${formatInteger(scheduleLag)} 期`}</span>
+            </div>
+            <div className="dataList">
+              <span>已执行期数</span>
+              <strong>{formatInteger(data?.elapsedVestingPeriods || 0n)}</strong>
+              <span>计划应到期数</span>
+              <strong>{formatInteger(data?.currentScheduledElapsedPeriods || 0n)}</strong>
+              <span>归属合约 PES 余额</span>
+              <strong>{formatUnits(data?.presalePesBalance || 0n)} PES</strong>
+              <span>已领取总量</span>
+              <strong>{formatUnits(data?.totalTokensClaimed || 0n)} PES</strong>
+              <span>未领取总量</span>
+              <strong>{formatUnits(data?.unclaimedAllocatedTokens || 0n)} PES</strong>
+              <span>每日释放预估</span>
+              <strong>{formatUnits(dailyDistributionPes)} PES</strong>
+              {!scheduleAligned ? (
+                <>
+                  <span>若直接发放将补发</span>
+                  <strong>{formatUnits(catchUpPesPerUser)} PES / 人</strong>
+                </>
+              ) : null}
+              <span>Keeper</span>
+              <strong>{shortAddress(data?.keeper)}</strong>
+            </div>
+            {!scheduleAligned ? (
+              <div className="emptyState">
+                当前计划期数领先已执行期数 {formatInteger(scheduleLag)} 期。请先点击「对齐释放进度（不补发）」，再补充 PES 并触发发放。
+              </div>
+            ) : null}
+            <div className="formGrid two">
+              <Field label="补款目标余额 (PES)">
+                <input
+                  value={fundPresaleAmount}
+                  onChange={(event) => setFundPresaleAmount(event.target.value)}
+                  placeholder="2000000"
+                />
+              </Field>
+              <Field label="本次需转入">
+                <input value={formatUnits(fundShortfall)} readOnly />
+              </Field>
+            </div>
+            <div className="buttonRow">
+              <Button
+                icon={Clock}
+                variant="secondary"
+                busy={busy === "alignAutoDistribution"}
+                disabled={!isPresaleOwner || data?.paused || scheduleAligned || !(data?.elapsedVestingPeriods > 0n)}
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      "将回拨自动释放起点，使计划期数与已执行期数对齐。不会补发逾期份额，之后按日继续释放。确认执行？"
+                    )
+                  ) {
+                    return;
+                  }
+                  runTransaction("对齐释放进度", "alignAutoDistribution", async ({ presale }) => {
+                    const elapsed = data?.elapsedVestingPeriods || 0n;
+                    const periodSeconds = data?.autoDistributionPeriodSeconds || 86_400n;
+                    const newStart = computeAlignedAutoDistributionStart(elapsed, periodSeconds);
+                    return presale.setAutoDistributionSchedule(newStart, periodSeconds);
+                  });
+                }}
+              >
+                对齐释放进度（不补发）
+              </Button>
+              <Button
+                icon={Coins}
+                variant="secondary"
+                busy={busy === "fundPresaleVesting"}
+                disabled={!account || fundShortfall === 0n}
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      `向归属合约转入 ${formatUnits(fundShortfall)} PES？当前钱包需持有足够 PES 并支付 Gas。`
+                    )
+                  ) {
+                    return;
+                  }
+                  runTransaction("补充归属合约 PES", "fundPresaleVesting", async ({ pes, presaleAddress }) =>
+                    pes.transfer(presaleAddress, fundShortfall)
+                  );
+                }}
+              >
+                补充 PES 到归属合约
+              </Button>
+              <Button
+                icon={Zap}
+                busy={busy === "runAutoDistribution"}
+                disabled={
+                  !canRunDistribution ||
+                  data?.paused ||
+                  !scheduleAligned ||
+                  !(data?.currentScheduledElapsedPeriods > 0n)
+                }
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      `将按 ${DISTRIBUTION_BUYER_COUNT} 个地址、${DISTRIBUTION_BATCH_SIZE} 个一批调用 distributeVested。确认执行？`
+                    )
+                  ) {
+                    return;
+                  }
+                  runTransaction("触发自动发放", "runAutoDistribution", async ({ presale, notify }) => {
+                    const chunks = chunkArray(DISTRIBUTION_BUYERS, DISTRIBUTION_BATCH_SIZE);
+                    setDistributionProgress({ current: 0, total: chunks.length });
+
+                    for (let index = 0; index < chunks.length; index += 1) {
+                      const accounts = chunks[index];
+                      const start = index * DISTRIBUTION_BATCH_SIZE + 1;
+                      const end = start + accounts.length - 1;
+
+                      notify("info", `自动发放 ${index + 1}/${chunks.length}: 等待钱包确认 ${start}-${end}`);
+                      const estimatedGas = await presale.distributeVested.estimateGas(accounts);
+                      const gasLimit = (estimatedGas * 12n) / 10n;
+                      const tx = await presale.distributeVested(accounts, { gasLimit });
+                      notify("info", `自动发放 ${index + 1}/${chunks.length}: 等待链上确认 ${tx.hash}`);
+                      await tx.wait();
+                      setDistributionProgress({ current: index + 1, total: chunks.length });
+                    }
+                  });
+                }}
+              >
+                触发自动发放
+              </Button>
+            </div>
+            {distributionProgress.total ? (
+              <div className="batchProgress">
+                已完成 {distributionProgress.current} / {distributionProgress.total} 批
+              </div>
+            ) : null}
+            <div className="emptyState">
+              推荐顺序：① 对齐释放进度 → ② 补充 PES → ③ 触发自动发放。Keeper 或 Presale Owner 钱包可执行发放；补款可使用任意持有 PES 的钱包。
+            </div>
+          </div>
+        ) : null}
 
         <div className="surfacePanel">
           <h3>份额配置</h3>
@@ -1839,6 +2021,7 @@ export default function App() {
           pes.totalBuyFeeBps(),
           pes.totalSellFeeBps(),
           account ? pes.balanceOf(account) : 0n,
+          pes.balanceOf(normalizeAddress(config.presaleAddress)),
         ]),
         Promise.all([
           presale.owner(),
@@ -1884,6 +2067,7 @@ export default function App() {
         totalBuyFeeBps,
         totalSellFeeBps,
         pesBalance,
+        presalePesBalance,
       ] = tokenReads;
 
       const [
@@ -1972,6 +2156,7 @@ export default function App() {
         totalTokensAllocated,
         totalTokensClaimed,
         unclaimedAllocatedTokens,
+        presalePesBalance,
         pesBalance,
         vested,
         claimable,

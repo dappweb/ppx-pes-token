@@ -1,0 +1,140 @@
+{
+  "runAt": "2026-06-01T04:08:00.000Z",
+  "mode": "execute",
+  "network": "bsc",
+  "chainId": "56",
+  "release": {
+    "period": 2,
+    "releasePercentTotal": "22",
+    "periodDistributed": "60000.0",
+    "totalDistributedAfter": "660000.0",
+    "accounts": 1000,
+    "batchSize": 80
+  },
+  "contracts": {
+    "pesToken": "0x40D51d93e3Eb057b3558DA71C7CCdEAa27713E41",
+    "presaleVesting": "0x38882c608F64a8dAA5fbAB9a0712361D72866B6B"
+  },
+  "executor": {
+    "worker": "https://pes-auto-distributor.dappweb.workers.dev",
+    "signer": "0x7123A25d205190e6844712Cb18e39d6DD5316143",
+    "source": "manual"
+  },
+  "workerSchedule": {
+    "cron": "0 4 * * *",
+    "beijingTime": "12:00:00",
+    "deploymentVersionId": "1f414aee-c10c-45ec-a550-fcda14fe8a59"
+  },
+  "stateBefore": {
+    "elapsedVestingPeriods": "1",
+    "scheduledElapsedPeriods": "2",
+    "totalTokensClaimed": "600000.0"
+  },
+  "stateAfter": {
+    "blockNumber": 101623729,
+    "elapsedVestingPeriods": "2",
+    "scheduledElapsedPeriods": "2",
+    "totalTokensClaimed": "660000.0",
+    "unclaimedAllocatedTokens": "2340000.0",
+    "presalePesBalance": "340000.0"
+  },
+  "transactions": [
+    {
+      "batch": 1,
+      "accounts": 80,
+      "hash": "0xd088cb4589e6cec33b09ded7e106a34198036fa9aa66a30535cf1b674cea5c4b",
+      "blockNumber": 101623504,
+      "gasUsed": "1988933"
+    },
+    {
+      "batch": 2,
+      "accounts": 80,
+      "hash": "0xa212e6d4e17a75bb6d6289f6efe2baf28b24e757f27a3ff78d2aedea5ac1b599",
+      "blockNumber": 101623514,
+      "gasUsed": "2001458"
+    },
+    {
+      "batch": 3,
+      "accounts": 80,
+      "hash": "0x00e911ff135260f78f9b0b3bd7400e95d74f423e593cfa3341ab0c64aa15a269",
+      "blockNumber": 101623524,
+      "gasUsed": "1950206"
+    },
+    {
+      "batch": 4,
+      "accounts": 80,
+      "hash": "0x3c012fc1d3ca4b0f899819bb55d8a6a8dcff5647cb35bfe08ebd9c6e1462d270",
+      "blockNumber": 101623536,
+      "gasUsed": "1950182"
+    },
+    {
+      "batch": 5,
+      "accounts": 80,
+      "hash": "0x4bf41e1d09f5b2c876b25842eb511832d76e9a14154ac29df5dcce2f486a87cf",
+      "blockNumber": 101623545,
+      "gasUsed": "1950218"
+    },
+    {
+      "batch": 6,
+      "accounts": 80,
+      "hash": "0x168e26162f288d30ba88ac666bfda544e9913ec06ead3a2bf81de28d636b12ed",
+      "blockNumber": 101623555,
+      "gasUsed": "1950230"
+    },
+    {
+      "batch": 7,
+      "accounts": 80,
+      "hash": "0x3cb532e3c146406b0c6a82a96783eb41ffe459abbfe50d2c78505cc362dece62",
+      "blockNumber": 101623566,
+      "gasUsed": "1967282"
+    },
+    {
+      "batch": 8,
+      "accounts": 80,
+      "hash": "0x1142861bf6cb9324c716b297f67e42b8cb00cc3fa8b885e787dd4196f475074b",
+      "blockNumber": 101623576,
+      "gasUsed": "1950218"
+    },
+    {
+      "batch": 9,
+      "accounts": 80,
+      "hash": "0x52c765655a7a88fd4570e3de0351c42a609e524161be29f1059559b50c0ef1b2",
+      "blockNumber": 101623586,
+      "gasUsed": "1950218"
+    },
+    {
+      "batch": 10,
+      "accounts": 80,
+      "hash": "0x33f5411c0c99ad0d2a5831bd923d2ebd5e8bf7232e5b45ea2c8b238422b4a1b2",
+      "blockNumber": 101623596,
+      "gasUsed": "1950146"
+    },
+    {
+      "batch": 11,
+      "accounts": 80,
+      "hash": "0x72876af3bda9eb8f48ff81137fc12289bfad2d3feba419cd4683caf7c762c74b",
+      "blockNumber": 101623606,
+      "gasUsed": "1950170"
+    },
+    {
+      "batch": 12,
+      "accounts": 80,
+      "hash": "0xb16c57f8c569f3ca374236de7e33de86ba35f470ba35fabae5fa80151488305e",
+      "blockNumber": 101623617,
+      "gasUsed": "1950146"
+    },
+    {
+      "batch": 13,
+      "accounts": 40,
+      "hash": "0x68be76bbb3b8bf52ece6aa2dfc7493638f8fbf6bd5e115dc74beefeb97f552ef",
+      "blockNumber": 101623627,
+      "gasUsed": "1004760"
+    }
+  ],
+  "notes": [
+    "DISTRIBUTOR_RUN_TOKEN was rotated before manual trigger.",
+    "Period 2 release was executed by the authorized keeper through the Cloudflare Worker.",
+    "Worker cron was updated from 10 16 * * * to 0 4 * * *, which corresponds to 12:00:00 Beijing time.",
+    "Presale balance after period 2 is 340000 PES; future periods require at least 60000 PES per day."
+  ]
+}

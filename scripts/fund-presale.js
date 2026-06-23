@@ -121,8 +121,13 @@ async function main() {
     : requiredFunding;
   const shortfall = presalePesBalance >= targetFunding ? 0n : targetFunding - presalePesBalance;
 
+  const fundFromSigner = parseBool("FUND_FROM_SIGNER", false);
+  const zeroOwner =
+    !tokenOwner || hre.ethers.getAddress(tokenOwner) === hre.ethers.ZeroAddress;
+  const useSignerFunding = fundFromSigner || zeroOwner;
+
   let signerAddress = null;
-  let ownerPesBalance = await pes.balanceOf(tokenOwner);
+  let funderPesBalance = await pes.balanceOf(tokenOwner);
   let txHash = null;
 
   if (execute) {
@@ -132,13 +137,15 @@ async function main() {
     }
 
     signerAddress = signer.address;
-    if (hre.ethers.getAddress(signerAddress) !== hre.ethers.getAddress(tokenOwner)) {
+    if (!useSignerFunding && hre.ethers.getAddress(signerAddress) !== hre.ethers.getAddress(tokenOwner)) {
       throw new Error(`Signer ${signerAddress} is not PES owner ${tokenOwner}`);
     }
 
-    ownerPesBalance = await pes.balanceOf(signerAddress);
-    if (ownerPesBalance < shortfall) {
-      throw new Error(`Owner PES balance ${formatPes(ownerPesBalance)} is below shortfall ${formatPes(shortfall)}`);
+    funderPesBalance = await pes.balanceOf(signerAddress);
+    if (funderPesBalance < shortfall) {
+      throw new Error(
+        `Signer PES balance ${formatPes(funderPesBalance)} is below shortfall ${formatPes(shortfall)}`
+      );
     }
 
     if (shortfall > 0n) {
@@ -171,7 +178,9 @@ async function main() {
     funding: {
       requiredFunding: formatPes(requiredFunding),
       targetFunding: formatPes(targetFunding),
-      ownerPesBalance: formatPes(ownerPesBalance),
+      pesOwner: tokenOwner,
+      fundFromSigner: useSignerFunding,
+      funderPesBalance: formatPes(funderPesBalance),
       presalePesBalanceBefore: formatPes(presalePesBalance),
       shortfallTransferred: formatPes(execute ? shortfall : 0n),
       shortfallPending: formatPes(execute ? 0n : shortfall),

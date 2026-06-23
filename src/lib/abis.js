@@ -20,6 +20,7 @@ export const PES_TOKEN_ABI = [
   "function setExcludedFromFees(address account, bool excluded)",
   "function setFeeWallets(address newLiquidityWallet, address newOperationsWallet)",
   "function setFeeRates(bool isBuyFee, uint16 liquidityBps, uint16 operationsBps, uint16 burnBps)",
+  "function transfer(address to, uint256 amount) returns (bool)",
   "function transferOwnership(address newOwner)",
   "function pause()",
   "function unpause()",

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 6284 --strictPort",
     "build": "vite build",
+    "deploy:pages": "npm run build && wrangler pages deploy dist --project-name=ppx-pes-token --commit-dirty=true",
     "preview": "vite preview --host 127.0.0.1 --port 6285",
     "compile": "hardhat compile",
     "test": "hardhat test",
@@ -16,6 +17,8 @@
     "grant:allocations": "hardhat run scripts/grant-allocations.js",
     "simulate:admin-batch": "node scripts/simulate-admin-batch-allocation.js",
     "configure:presale:schedule": "node scripts/configure-mainnet-presale-schedule.js",
+    "schedule:auto-distribution": "hardhat run scripts/set-auto-distribution-schedule.js --network bsc",
+    "resume:vesting": "node scripts/resume-vesting-no-catchup.js",
     "upgrade:presale": "hardhat run scripts/upgrade-mainnet-presale.js --network bsc",
     "enable:trading": "hardhat run scripts/enable-trading.js"
   },

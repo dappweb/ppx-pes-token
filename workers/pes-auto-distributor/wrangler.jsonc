@@ -4,12 +4,12 @@
   "compatibility_date": "2026-05-08",
   "compatibility_flags": ["nodejs_compat"],
   "triggers": {
-    "crons": ["10 16 * * *"]
+    "crons": ["0 4 * * *"]
   },
   "vars": {
     "CHAIN_ID": "56",
     "BSC_RPC_URL": "https://bsc-rpc.publicnode.com",
-    "PRESALE_ADDRESS": "0x6d5Fc8F6A0481a81A726Ca2Fac85c23ED80619fd",
+    "PRESALE_ADDRESS": "0x38882c608F64a8dAA5fbAB9a0712361D72866B6B",
     "BATCH_SIZE": "80",
     "CONFIRMATIONS": "1"
   }

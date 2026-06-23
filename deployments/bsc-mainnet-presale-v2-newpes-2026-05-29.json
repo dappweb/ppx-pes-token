@@ -1,0 +1,62 @@
+{
+  "runAt": "2026-05-29T11:59:35.526Z",
+  "mode": "execute",
+  "network": "bsc",
+  "chainId": "56",
+  "initParams": {
+    "pesToken": "0x40D51d93e3Eb057b3558DA71C7CCdEAa27713E41",
+    "paymentToken": "0x55d398326f99059fF775485246999027B3197955",
+    "initialOwner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "fundsWallet": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "paymentPerPackage": "300.0",
+    "pesPerPackage": "3000.0",
+    "maxPackages": "1000",
+    "publicPackageCap": "0",
+    "perWalletPackageLimit": "1",
+    "saleStart": "0",
+    "saleEnd": "0",
+    "launchTime": "0"
+  },
+  "initializeV3Params": {
+    "keeper": "0x7123A25d205190e6844712Cb18e39d6DD5316143",
+    "manualClaimEnabled": false,
+    "firstReleaseTime": {
+      "timestamp": "1780200000",
+      "utc": "2026-05-31T04:00:00.000Z",
+      "beijing": "2026-05-31 12:00:00 +08:00"
+    },
+    "autoDistributionPeriodSeconds": "86400"
+  },
+  "signer": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+  "presaleVesting": {
+    "proxy": "0x38882c608F64a8dAA5fbAB9a0712361D72866B6B",
+    "implementation": "0xb5ba3CCC00F7f6df5C4A46C3Db3193a4Bd964C6B",
+    "explorer": "https://bscscan.com/address/0x38882c608F64a8dAA5fbAB9a0712361D72866B6B",
+    "implementationExplorer": "https://bscscan.com/address/0xb5ba3CCC00F7f6df5C4A46C3Db3193a4Bd964C6B",
+    "deploymentTx": "https://bscscan.com/tx/0x2ccffe0009da2ca310c8821e48876f42f32c016e5355a0f965a7be7069256211",
+    "initializeV3Tx": "https://bscscan.com/tx/0xf681139aaf0172288674603af99406f5a7949ac9fc80be032308a2ab5c7faf53"
+  },
+  "postDeployState": {
+    "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "pesToken": "0x40D51d93e3Eb057b3558DA71C7CCdEAa27713E41",
+    "paymentToken": "0x55d398326f99059fF775485246999027B3197955",
+    "keeper": "0x7123A25d205190e6844712Cb18e39d6DD5316143",
+    "manualClaimEnabled": false,
+    "autoDistributionStart": {
+      "timestamp": "1780200000",
+      "utc": "2026-05-31T04:00:00.000Z",
+      "beijing": "2026-05-31 12:00:00 +08:00"
+    },
+    "autoDistributionPeriodSeconds": "86400",
+    "vestingPeriods": "40",
+    "totalTokensAllocated": "0.0",
+    "totalTokensClaimed": "0.0",
+    "elapsedVestingPeriods": "0",
+    "paused": false
+  },
+  "nextSteps": [
+    "Run scripts/grant-allocations-newpes.js with PRESALE_ADDRESS=0x38882c608F64a8dAA5fbAB9a0712361D72866B6B",
+    "Fund presale: PES_ADDRESS=0x40D51d93e3Eb057b3558DA71C7CCdEAa27713E41 PRESALE_ADDRESS=0x38882c608F64a8dAA5fbAB9a0712361D72866B6B EXECUTE=true npx hardhat run scripts/fund-presale.js --network bsc",
+    "Update workers/pes-auto-distributor presale address to 0x38882c608F64a8dAA5fbAB9a0712361D72866B6B"
+  ]
+}

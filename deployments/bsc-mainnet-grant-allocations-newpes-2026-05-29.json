@@ -1,0 +1,111 @@
+{
+  "runAt": "2026-05-29T11:59:54.813Z",
+  "mode": "execute",
+  "network": "bsc",
+  "chainId": "56",
+  "presale": {
+    "address": "0x38882c608F64a8dAA5fbAB9a0712361D72866B6B",
+    "owner": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+    "pesToken": "0x40D51d93e3Eb057b3558DA71C7CCdEAa27713E41",
+    "explorer": "https://bscscan.com/address/0x38882c608F64a8dAA5fbAB9a0712361D72866B6B"
+  },
+  "source": {
+    "buyersFile": "output/pes-purchase-accounts-bsc-mainnet.json",
+    "uniqueBuyers": 1000,
+    "totalPackages": "1000"
+  },
+  "config": {
+    "pesPerPackage": "3000.0",
+    "maxPackages": "1000",
+    "chunkSize": 100,
+    "packagesPerBuyer": "1"
+  },
+  "stateBefore": {
+    "totalPackagesAllocated": "0",
+    "totalTokensAllocated": "0.0"
+  },
+  "expectedTotalTokens": "3000000.0",
+  "signer": "0xAC25dA7FdEEEaDf2943EBF505Fa9739CBD111bD8",
+  "txHashes": [
+    {
+      "range": "1-100",
+      "hash": "0x65cc3d2c41c7f3ea699116ede05aa724a1b7817cda962ae79f3072ac58780bab",
+      "url": "https://bscscan.com/tx/0x65cc3d2c41c7f3ea699116ede05aa724a1b7817cda962ae79f3072ac58780bab"
+    },
+    {
+      "range": "101-200",
+      "hash": "0x529494eeaf45e63757537d7e21b9c2a11f491d4181859c1a1d4571af3945c443",
+      "url": "https://bscscan.com/tx/0x529494eeaf45e63757537d7e21b9c2a11f491d4181859c1a1d4571af3945c443"
+    },
+    {
+      "range": "201-300",
+      "hash": "0x9f881014af862fd2f5c4b6522099f3a37fd51301726bda0362882f49cd09fb49",
+      "url": "https://bscscan.com/tx/0x9f881014af862fd2f5c4b6522099f3a37fd51301726bda0362882f49cd09fb49"
+    },
+    {
+      "range": "301-400",
+      "hash": "0x425f5ebc68dc2bc9351464cc7fe4bb03041075386b5ef916223c399873c6fab3",
+      "url": "https://bscscan.com/tx/0x425f5ebc68dc2bc9351464cc7fe4bb03041075386b5ef916223c399873c6fab3"
+    },
+    {
+      "range": "401-500",
+      "hash": "0x4ae809b78e04a5e16a15e195a031ea988ee994d4d10c8c68527d9eecbdea745f",
+      "url": "https://bscscan.com/tx/0x4ae809b78e04a5e16a15e195a031ea988ee994d4d10c8c68527d9eecbdea745f"
+    },
+    {
+      "range": "501-600",
+      "hash": "0x45f23e019a9fc5227f232266b6641b904051484831e0434b06b99b6b23edc811",
+      "url": "https://bscscan.com/tx/0x45f23e019a9fc5227f232266b6641b904051484831e0434b06b99b6b23edc811"
+    },
+    {
+      "range": "601-700",
+      "hash": "0xfba2ae6133a41ebc66829621a25eedb4b8c04e4a89430993c5cf6cbbd7778b00",
+      "url": "https://bscscan.com/tx/0xfba2ae6133a41ebc66829621a25eedb4b8c04e4a89430993c5cf6cbbd7778b00"
+    },
+    {
+      "range": "701-800",
+      "hash": "0x97cfa6dc91344017cd25a3349646da22c5b56b4f8143925f5e2f3056112a7008",
+      "url": "https://bscscan.com/tx/0x97cfa6dc91344017cd25a3349646da22c5b56b4f8143925f5e2f3056112a7008"
+    },
+    {
+      "range": "801-900",
+      "hash": "0xc40cf3827b862b0379711341e187a409a623fd056d56bba0bf9247e2a1c0c091",
+      "url": "https://bscscan.com/tx/0xc40cf3827b862b0379711341e187a409a623fd056d56bba0bf9247e2a1c0c091"
+    },
+    {
+      "range": "901-1000",
+      "hash": "0x751ac259fb2e543ab0e5f164f84d73e9296cca93c71b8d2efdfbe4fee9b16da2",
+      "url": "https://bscscan.com/tx/0x751ac259fb2e543ab0e5f164f84d73e9296cca93c71b8d2efdfbe4fee9b16da2"
+    }
+  ],
+  "stateAfter": {
+    "totalPackagesAllocated": "1000",
+    "totalTokensAllocated": "3000000.0"
+  },
+  "samples": [
+    {
+      "account": "0x7a65E586c9A8f501C36dde6e80838Ddc6450C45B",
+      "packages": "1",
+      "tokens": "3000.0",
+      "claimed": "0.0"
+    },
+    {
+      "account": "0xa43aB30eb4795389B07BB2a7d6D20d73A8Af67cF",
+      "packages": "1",
+      "tokens": "3000.0",
+      "claimed": "0.0"
+    },
+    {
+      "account": "0xA13e09Ef858B8B97C8F23469C2890c8718ba8262",
+      "packages": "1",
+      "tokens": "3000.0",
+      "claimed": "0.0"
+    },
+    {
+      "account": "0x2D88fd57c544EeE0fb9CF1c9A7886AC373f5e871",
+      "packages": "1",
+      "tokens": "3000.0",
+      "claimed": "0.0"
+    }
+  ]
+}
